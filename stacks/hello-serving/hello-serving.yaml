@@ -1,0 +1,36 @@
+
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Stack
+metadata:
+  name: flow-hello
+spec:
+  components:
+    - options:
+        enableResync: true
+      object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: helloworld-go
+          namespace: tmflow
+        spec:
+          template:
+            spec:
+              containers:
+              - image: docker.io/pmercado/khw
+                env:
+                - name: TARGET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: helloworld-go-message
+                      key: message
+    - options:
+        enableResync: true
+      object:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: helloworld-go-message
+        data:
+          message: "Hope you are doing fine"
+

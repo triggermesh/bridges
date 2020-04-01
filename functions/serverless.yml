@@ -1,0 +1,36 @@
+service: tm-targets
+description: "Sends event to a set of targets"
+
+provider:
+  name: triggermesh
+
+functions:
+  sns:
+    handler: sns
+    description: "python function sending event to SNS using boto3"
+    runtime: https://raw.githubusercontent.com/triggermesh/knative-lambda-runtime/master/python-3.7/runtime.yaml 
+    environment:
+      SNS_ARN: arn:aws:sns:us-east-1:587264368683:triggermesh
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_SHARED_CREDENTIALS_FILE: /opt/credentials
+    buildargs:
+      - HANDLER=handler.send
+  sqs:
+    handler: sqs
+    description: "python function putting event in SQS using boto3"
+    runtime: https://raw.githubusercontent.com/triggermesh/knative-lambda-runtime/master/python-3.7/runtime.yaml 
+    environment:
+      QUEUE_URL: https://sqs.us-east-1.amazonaws.com/587264368683/triggermesh
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_SHARED_CREDENTIALS_FILE: /opt/credentials
+    buildargs:
+      - HANDLER=handler.send
+  vision:
+    handler: vision
+    description: "python function to call the google vision API and store annotate image back in bucket"
+    runtime: https://raw.githubusercontent.com/triggermesh/knative-lambda-runtime/master/python-3.7/runtime.yaml 
+    environment:
+      BUCKETNAME: triggermeshdemo
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/key.json
+    buildargs:
+      - HANDLER=handler.vision

@@ -1,0 +1,67 @@
+
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Stack
+metadata:
+  name: cronjob-display
+spec:
+  components:
+
+    - options:
+        enableResync: false
+      object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Broker
+        metadata:
+          name: text-message-hub
+        spec:
+          channelTemplateSpec:
+            apiVersion: messaging.knative.dev/v1alpha1
+            kind: InMemoryChannel
+
+    - options:
+        enableResync: false
+      object:
+        apiVersion: sources.eventing.knative.dev/v1alpha1
+        kind: CronJobSource
+        metadata:
+          creationTimestamp: "2020-04-08T11:05:47Z"
+          name: cron-job-source-tm
+        spec:
+          data: let the event be dispatched
+          schedule: '*/1 * * * *'
+          sink:
+            apiVersion: eventing.knative.dev/v1alpha1
+            kind: Broker
+            name: text-message-hub
+
+    - options:
+        enableResync: false
+      object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: event-display
+        spec:
+          template:
+            spec:
+              containers:
+              - image: pmercado/event_display-864884f202126ec3150c5fcef437d90c
+                name: user-container
+
+    - options:
+        enableResync: false
+      object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          labels:
+            eventing.knative.dev/broker: text-message-hub
+          name: sendme-everything
+        spec:
+          broker: text-message-hub
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1alpha1
+              kind: Service
+              name: event-display
+

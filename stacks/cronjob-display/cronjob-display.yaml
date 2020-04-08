@@ -45,7 +45,7 @@ spec:
           template:
             spec:
               containers:
-              - image: pmercado/event_display-864884f202126ec3150c5fcef437d90c
+              - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
                 name: user-container
 
     - options:

@@ -1,6 +1,6 @@
 
 apiVersion: flow.triggermesh.io/v1alpha1
-kind: Stack
+kind: Bridge
 metadata:
   name: flow-hello
 spec:
@@ -12,7 +12,6 @@ spec:
         kind: Service
         metadata:
           name: helloworld-go
-          namespace: tmflow
         spec:
           template:
             spec:

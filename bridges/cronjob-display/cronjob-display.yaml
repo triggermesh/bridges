@@ -1,14 +1,11 @@
 
 apiVersion: flow.triggermesh.io/v1alpha1
-kind: Stack
+kind: Bridge
 metadata:
-  name: cronjob-display
+  name: pingsource-display
 spec:
   components:
-
-    - options:
-        enableResync: false
-      object:
+    - object:
         apiVersion: eventing.knative.dev/v1alpha1
         kind: Broker
         metadata:
@@ -18,25 +15,21 @@ spec:
             apiVersion: messaging.knative.dev/v1alpha1
             kind: InMemoryChannel
 
-    - options:
-        enableResync: false
-      object:
-        apiVersion: sources.eventing.knative.dev/v1alpha1
-        kind: CronJobSource
+    - object:
+        apiVersion: sources.knative.dev/v1alpha2
+        kind: PingSource
         metadata:
-          creationTimestamp: "2020-04-08T11:05:47Z"
           name: cron-job-source-tm
         spec:
-          data: let the event be dispatched
-          schedule: '*/1 * * * *'
+          schedule: "*/1 * * * *"
+          jsonData: '{"message": "let the event be dispatched"}'
           sink:
-            apiVersion: eventing.knative.dev/v1alpha1
-            kind: Broker
-            name: text-message-hub
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: text-message-hub
 
-    - options:
-        enableResync: false
-      object:
+    - object:
         apiVersion: serving.knative.dev/v1
         kind: Service
         metadata:
@@ -48,9 +41,7 @@ spec:
               - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
                 name: user-container
 
-    - options:
-        enableResync: false
-      object:
+    - object:
         apiVersion: eventing.knative.dev/v1alpha1
         kind: Trigger
         metadata:

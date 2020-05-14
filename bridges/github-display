@@ -1,0 +1,65 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: github-display
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Broker
+        metadata:
+          name: github-default
+        spec:
+          channelTemplateSpec:
+            apiVersion: messaging.knative.dev/v1alpha1
+            kind: InMemoryChannel
+            
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitHubSource
+        metadata:
+           name: github-source
+        spec:
+          accessToken:
+            secretKeyRef:
+              key: accessToken
+              name: githubsecret
+          eventTypes:
+          - push
+          ownerAndRepository: sebgoa/tmserverless
+          secretToken:
+            secretKeyRef:
+              key: secretToken
+              name: githubsecret
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1alpha1
+              kind: Broker
+              name: default
+    
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: event-display
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
+                name: user-container
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          labels:
+            eventing.knative.dev/broker: text-message-hub
+          name: sendme-everything
+        spec:
+          broker: github-display
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1alpha1
+              kind: Service
+              name: event-display

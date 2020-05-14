@@ -29,9 +29,9 @@ spec:
               name: githubsecret
           sink:
             ref:
-              apiVersion: eventing.knative.dev/v1alpha1
+              apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: default
+              name: github-default
     
     - object:
         apiVersion: serving.knative.dev/v1
@@ -51,11 +51,11 @@ spec:
         metadata:
           labels:
             eventing.knative.dev/broker: text-message-hub
-          name: sendme-everything
+          name: sendme-github
         spec:
-          broker: github-display
+          broker: github-default
           subscriber:
             ref:
-              apiVersion: serving.knative.dev/v1alpha1
+              apiVersion: serving.knative.dev/v1
               kind: Service
               name: event-display

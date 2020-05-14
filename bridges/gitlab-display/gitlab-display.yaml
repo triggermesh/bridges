@@ -52,11 +52,11 @@ spec:
         metadata:
           labels:
             eventing.knative.dev/broker: text-message-hub
-          name: sendme-everything
+          name: gitlab-events
         spec:
-          broker: gitlab-display
+          broker: gitlab-default
           subscriber:
             ref:
-              apiVersion: serving.knative.dev/v1alpha1
+              apiVersion: serving.knative.dev/v1
               kind: Service
               name: event-display

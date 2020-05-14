@@ -6,14 +6,10 @@ metadata:
 spec:
   components:
     - object:
-        apiVersion: eventing.knative.dev/v1alpha1
+        apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
           name: text-message-hub
-        spec:
-          channelTemplateSpec:
-            apiVersion: messaging.knative.dev/v1alpha1
-            kind: InMemoryChannel
 
     - object:
         apiVersion: sources.knative.dev/v1alpha2

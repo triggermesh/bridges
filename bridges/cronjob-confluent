@@ -1,0 +1,61 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: pingsource-confluent
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Broker
+        metadata:
+          name: confluent-test
+        spec:
+          channelTemplateSpec:
+            apiVersion: messaging.knative.dev/v1alpha1
+            kind: InMemoryChannel
+
+    - object:
+        apiVersion: sources.knative.dev/v1alpha2
+        kind: PingSource
+        metadata:
+          name: cron-job-source-tm
+        spec:
+          schedule: "*/1 * * * *"
+          jsonData: '{"message": "let it go to confluent cluster"}'
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: confluent-test
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ConfluentTarget
+        metadata:
+          name: triggermesh-confluent
+        spec:
+          bootstrapservers:
+            secretKeyRef:
+              key: bootstrapservers
+              name: confluent
+          password:
+            secretKeyRef:
+              key: password
+              name: confluent
+          username:
+            secretKeyRef:
+              key: username
+              name: confluent
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: confluent-trigger
+        spec:
+          broker: default
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ConfluentTarget
+              name: triggermesh-confluent

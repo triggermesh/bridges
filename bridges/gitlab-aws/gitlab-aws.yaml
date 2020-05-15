@@ -11,31 +11,33 @@ spec:
           name: gitlab-lambda-broker
 
     - object:
-      apiVersion: sources.eventing.triggermesh.dev/v1alpha1
-      kind: GitLabSource
-      metadata:
-        name: gitlabsource-sample
-      spec:
-        eventTypes:
-        - push_events
-        - issues_events
-        projectUrl: "https://gitlab.com/cab105/testproj"
-        accessToken:
-          secretKeyRef:
-            name: gitlabsecret
-            key: accessToken
-        secretToken:
-          secretKeyRef:
-            name: gitlabsecret
-            key: secretToken
-        sink:
-          apiVersion: eventing.knative.dev/v1beta1
-          kind: Broker
-          name: gitlab-lambda-broker
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitLabSource
+        metadata:
+            finalizers:
+                - gitlabsources.sources.knative.dev
+            name: gitlab-sample-source
+        spec:
+            accessToken:
+                secretKeyRef:
+                    key: accessToken
+                    name: gitlabcreds
+            eventTypes:
+                - push_events
+            projectUrl: 'https://gitlab.com/cab105/testproj'
+            secretToken:
+                secretKeyRef:
+                    key: secretToken
+                    name: gitlabcreds
+            sink:
+                ref:
+                    apiVersion: eventing.knative.dev/v1alpha1
+                    kind: Broker
+                    name: gitlab-lambda-broker
 
     - object:
         apiVersion: targets.triggermesh.io/v1alpha1
-        kind: AwsTarget
+        kind: AWSTarget
         metadata:
           name: aws-lambda-dumper-target
         spec:
@@ -60,5 +62,5 @@ spec:
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
-              kind: AwsTarget
+              kind: AWSTarget
               name: aws-lambda-dumper-target

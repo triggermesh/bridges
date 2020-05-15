@@ -20,8 +20,8 @@ spec:
         metadata:
           name: minute-cron-job-source-tm
         spec:
-          schedule: "*/1 * * * *"
-          jsonData: '{"buildtype": "task", "name": "tekton-test", "params":{"greeting": "Hi from Triggermesh EventBridge!"}}'
+          schedule: "5 * * * *"
+          jsonData: '{"buildtype": "task", "name": "tekton-test", "params":{"greeting": "Hi from Triggermesh EveryBridge!"}}'
           sink:
             ref:
               apiVersion: eventing.knative.dev/v1beta1

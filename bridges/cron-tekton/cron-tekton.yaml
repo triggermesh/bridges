@@ -1,0 +1,44 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: pingsource-tektontarget
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: tekton-test-broker
+
+    - object:
+        apiVersion: sources.knative.dev/v1alpha2
+        kind: PingSource
+        metadata:
+          name: minute-cron-job-source-tm
+        spec:
+          schedule: "* * * * *"
+          jsonData: '{"buildtype": "task", "name": "tekton-test", "params":{"greeting": "Hi from Triggermesh EveryBridge!"}}'
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: tekton-test-broker
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: TektonTarget
+        metadata:
+          name: tm-tekton-target
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: tekton-trigger
+        spec:
+          broker: tekton-test-broker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: TektonTarget
+              name: tm-tekton-target

@@ -1,37 +1,38 @@
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
-  name: github-display
+  name: gitlab-display
 spec:
   components:
     - object:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: github-default
+          name: gitlab-default
             
-    - object:
+    - object: 
         apiVersion: sources.knative.dev/v1alpha1
-        kind: GitHubSource
+        kind: GitLabSource
         metadata:
-           name: github-source
+          name: gitlabsource-sample
         spec:
+          eventTypes:
+          - push_events
+          - issues_events
+          projectUrl: https://gitlab.com/sebgoa/phoenix 
           accessToken:
             secretKeyRef:
+              name: gitlabsecret
               key: accessToken
-              name: githubsecret
-          eventTypes:
-          - push
-          ownerAndRepository: sebgoa/tmserverless
           secretToken:
             secretKeyRef:
+              name: gitlabsecret
               key: secretToken
-              name: githubsecret
           sink:
             ref:
-              apiVersion: eventing.knative.dev/v1alpha1
+              apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: default
+              name: gitlab-default
     
     - object:
         apiVersion: serving.knative.dev/v1
@@ -51,11 +52,11 @@ spec:
         metadata:
           labels:
             eventing.knative.dev/broker: text-message-hub
-          name: sendme-everything
+          name: gitlab-events
         spec:
-          broker: github-display
+          broker: gitlab-default
           subscriber:
             ref:
-              apiVersion: serving.knative.dev/v1alpha1
+              apiVersion: serving.knative.dev/v1
               kind: Service
               name: event-display

@@ -1,30 +1,38 @@
-
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
-  name: pingsource-display
+  name: github-display
 spec:
   components:
     - object:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: text-message-hub
-
+          name: github-default
+            
     - object:
-        apiVersion: sources.knative.dev/v1alpha2
-        kind: PingSource
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitHubSource
         metadata:
-          name: cron-job-source-tm
+           name: github-source
         spec:
-          schedule: "*/1 * * * *"
-          jsonData: '{"message": "let the event be dispatched"}'
+          accessToken:
+            secretKeyRef:
+              key: accessToken
+              name: githubsecret
+          eventTypes:
+          - push
+          ownerAndRepository: sebgoa/tmserverless
+          secretToken:
+            secretKeyRef:
+              key: secretToken
+              name: githubsecret
           sink:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: text-message-hub
-
+              name: github-default
+    
     - object:
         apiVersion: serving.knative.dev/v1
         kind: Service
@@ -43,12 +51,11 @@ spec:
         metadata:
           labels:
             eventing.knative.dev/broker: text-message-hub
-          name: sendme-everything
+          name: sendme-github
         spec:
-          broker: text-message-hub
+          broker: github-default
           subscriber:
             ref:
-              apiVersion: serving.knative.dev/v1alpha1
+              apiVersion: serving.knative.dev/v1
               kind: Service
               name: event-display
-

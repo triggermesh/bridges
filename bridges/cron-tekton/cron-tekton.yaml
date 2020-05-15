@@ -5,14 +5,10 @@ metadata:
 spec:
   components:
     - object:
-        apiVersion: eventing.knative.dev/v1alpha1
+        apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
           name: tekton-test-broker
-        spec:
-          channelTemplateSpec:
-            apiVersion: messaging.knative.dev/v1alpha1
-            kind: InMemoryChannel
 
     - object:
         apiVersion: sources.knative.dev/v1alpha2
@@ -20,7 +16,7 @@ spec:
         metadata:
           name: minute-cron-job-source-tm
         spec:
-          schedule: "5 * * * *"
+          schedule: "* * * * *"
           jsonData: '{"buildtype": "task", "name": "tekton-test", "params":{"greeting": "Hi from Triggermesh EveryBridge!"}}'
           sink:
             ref:

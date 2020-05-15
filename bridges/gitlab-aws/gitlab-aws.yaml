@@ -1,0 +1,64 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: gitlabsource-awslambdatarget
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: gitlab-lambda-broker
+
+    - object:
+      apiVersion: sources.eventing.triggermesh.dev/v1alpha1
+      kind: GitLabSource
+      metadata:
+        name: gitlabsource-sample
+      spec:
+        eventTypes:
+        - push_events
+        - issues_events
+        projectUrl: "https://gitlab.com/cab105/testproj"
+        accessToken:
+          secretKeyRef:
+            name: gitlabsecret
+            key: accessToken
+        secretToken:
+          secretKeyRef:
+            name: gitlabsecret
+            key: secretToken
+        sink:
+          apiVersion: eventing.knative.dev/v1beta1
+          kind: Broker
+          name: gitlab-lambda-broker
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: AwsTarget
+        metadata:
+          name: aws-lambda-dumper-target
+        spec:
+          awsApiKey:
+            secretKeyRef:
+              name: awscreds
+              key: AWS_ACCESS_KEY_ID
+          awsApiSecret:
+            secretKeyRef:
+              name: awscreds
+              key: AWS_SECRET_ACCESS_KEY
+          lambda:
+            arn: arn:aws:lambda:us-west-2:043455440429:function:lambdadumper
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: aws-lambda-dumper-trigger
+        spec:
+          broker: gitlab-lambda-broker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: AwsTarget
+              name: aws-lambda-dumper-target

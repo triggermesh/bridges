@@ -1,0 +1,95 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: git-twilio-again
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: events
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: transform
+            
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitHubSource
+        metadata:
+           name: github-twilio
+        spec:
+          accessToken:
+            secretKeyRef:
+              key: accessToken
+              name: githubsecret
+          eventTypes:
+          - push
+          ownerAndRepository: sebgoa/functions
+          secretToken:
+            secretKeyRef:
+              key: secretToken
+              name: githubsecret
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events
+
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: event-twilio
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: events-kne-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: trans-twilio
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: transform
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          labels:
+            eventing.knative.dev/broker: text-message-hub
+          name: sendme-twilio
+        spec:
+          broker: transform
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: TwilioTarget
+              name: twilio-sms-again
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: TwilioTarget
+        metadata:
+          name: twilio-sms-again
+        spec:
+          defaultPhoneTo: "+41793673825"
+          defaultPhoneFrom: "+12513176618"
+          sid:
+            secretKeyRef:
+              name: twilio
+              key: sid
+          token:
+            secretKeyRef:
+              name: twilio
+              key: token
+
+

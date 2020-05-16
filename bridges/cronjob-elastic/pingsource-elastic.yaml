@@ -1,0 +1,55 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: pingsource-elastic
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: pingsource-elastic
+
+    - object:
+        apiVersion: sources.knative.dev/v1alpha2
+        kind: PingSource
+        metadata:
+          name: cron-job-source-tm
+        spec:
+          schedule: "*/1 * * * *"
+          jsonData: '{"message": "greetings from pingsource"}'
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: pingsource-elastic
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ElasticsearchTarget
+        metadata:
+          name: tm-elastic
+        spec:
+          connection:
+            addresses:
+              - https://triggermesh-demo-es-http.tm-elastic:9200
+            skipVerify: true
+            username: elastic
+            password:
+              secretKeyRef:
+                key: password
+                name: elastic
+          indexName: tmindex
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: pingsource-elastic-trigger
+        spec:
+          broker: pingsource-elastic
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ElasticsearchTarget
+              name: tm-elastic

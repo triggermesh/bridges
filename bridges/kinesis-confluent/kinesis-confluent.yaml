@@ -1,0 +1,91 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: kinesis-confluent
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: events-aws-kinesis
+            
+    - object:
+        apiVersion: sources.knative.dev/v1alpha2
+        kind: ContainerSource
+        metadata:
+          name: aws-kinesis
+        spec:
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events-aws-kinesis
+          template:
+            spec:
+              containers:
+              - name: source
+                image: gcr.io/triggermesh/awskinesissource:latest
+                env:
+                # Kinesis stream
+                - name: ARN
+                  value: arn:aws:kinesis:us-east-1:587264368683:stream/everybridge
+
+                # AWS credentials
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: awscreds
+                      key: aws_access_key_id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: awscreds
+                      key: aws_secret_access_key
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: K_LOGGING_CONFIG
+                  value: ''
+                - name: K_METRICS_CONFIG
+                  value: |
+                    {
+                      "domain": "triggermesh.io/sources",
+                      "component": "awskinesissource",
+                      "configMap": {}
+                    }
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: kinesis-confluent
+        spec:
+          broker: events-aws-kinesis
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ConfluentTarget
+              name: confluent-demo
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ConfluentTarget
+        metadata:
+          name: confluent-demo
+        spec:
+          username:
+            secretKeyRef:
+              name: confluent
+              key: username
+          password:
+            secretKeyRef:
+              name: confluent
+              key: password
+          bootstrapservers:
+            secretKeyRef:
+              name: confluent
+              key: bootstrapservers
+
+

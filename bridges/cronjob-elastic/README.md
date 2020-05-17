@@ -13,5 +13,7 @@ This bridge uses
 
 ## Parametrization
 
+Customization of URL and secret creation for Elasticsearch is required.
+
 - Refer to [Pingsource docs](https://github.com/knative/docs/tree/master/docs/eventing/samples/ping-source) for the JSON being produced.
 - Refer to [Elasticsearch docs](../../docs/targets/elasticsearch.md) for customization of credentials and index.

@@ -4,7 +4,7 @@ Bridges are the core object of TriggerMesh's EveryBridge offering available in B
 
 They represent a seamless way of building event flows made of event sources and event targets. In this repository you will find some sample Bridges that can be used in the TriggerMesh Cloud.
 
-A `Bridge` is a single manifest that contains an arbitrary number of components, each of which needs to be a valid kubernetes object. It was inspired by the [Application CRD](). TriggerFlow is the internal controller which manages `Bridges`.
+A `Bridge` is a single manifest that contains an arbitrary number of components, each of which needs to be a valid kubernetes object. It was inspired by the [Application CRD](https://github.com/kubernetes-sigs/application). TriggerFlow is the internal controller which manages `Bridges`.
 
 > A note on Open Source. Currently the Bridge controller is not open source, it is still under heavy development. We plan to and to some extent already are contributing the ideas behind Bridges and Targets to the upstream Knative community. Stay tune for a fast evolving space...
 

@@ -17,7 +17,7 @@ A Slack Bot User that uses the RealTime API
 1. Customize Slack adding a new **clasic** bot at https://api.slack.com/apps?new_classic_app=1
 2. From Basic Information section, display Add features and functionality and select bots, then click on `Add Legacy Bot User`
 3. Select `Install App` section and click on `Install App to Workspace`
-4. Copy the bot user OAuth token
+4. Copy the bot user OAuth token (should begin with `xoxb-`)
 
 ### Creating an Slack Source instance
 

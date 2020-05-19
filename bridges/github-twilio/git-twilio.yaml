@@ -81,8 +81,8 @@ spec:
         metadata:
           name: twilio-sms-again
         spec:
-          defaultPhoneTo: "+41793673825"
-          defaultPhoneFrom: "+12513176618"
+          defaultPhoneTo: "+12223334444"
+          defaultPhoneFrom: "+13334445555"
           sid:
             secretKeyRef:
               name: twilio

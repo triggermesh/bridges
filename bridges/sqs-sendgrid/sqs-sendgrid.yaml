@@ -114,7 +114,7 @@ spec:
         spec:
           defaultFromName: "Everybridge"
           defaultToName: "sebgoa"
-          defaultToEmail: "runseb@gmail.com"
+          defaultToEmail: "foo@bar.com"
           defaultFromEmail: "everybridge@triggermesh.io"
           apiKey:
             secretKeyRef:

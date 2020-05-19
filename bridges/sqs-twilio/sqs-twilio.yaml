@@ -112,8 +112,8 @@ spec:
         metadata:
           name: twilio-sqs-sms
         spec:
-          defaultPhoneTo: "+41793673825"
-          defaultPhoneFrom: "+12513176618"
+          defaultPhoneTo: "+19998887777"
+          defaultPhoneFrom: "+125666666"
           sid:
             secretKeyRef:
               name: twilio

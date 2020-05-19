@@ -1,4 +1,4 @@
-# Triggermesh Bridges
+# Triggermesh Bridges ![](./everybridge.png)
 
 Bridges are the core object of TriggerMesh's EveryBridge offering available in Beta for free in the [TriggerMesh Cloud](https://cloud.triggermesh.io).
 

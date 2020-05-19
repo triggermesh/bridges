@@ -2,6 +2,8 @@
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
+  annotations:
+    bridges.triggermesh.io/name: hello-bridge
   name: flow-hello
 spec:
   components:

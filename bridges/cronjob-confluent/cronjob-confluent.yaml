@@ -1,6 +1,8 @@
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
+  annotations:
+    bridges.triggermesh.io/name: pingsource-confluent
   name: pingsource-confluent
 spec:
   components:

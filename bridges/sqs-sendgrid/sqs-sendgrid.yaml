@@ -1,7 +1,7 @@
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
-  name: sqs-twilio
+  name: sqs-sendgrid
 spec:
   components:
     - object:
@@ -15,7 +15,7 @@ spec:
         kind: Broker
         metadata:
           name: transform-sqs
-            
+
     - object:
         apiVersion: sources.knative.dev/v1alpha2
         kind: ContainerSource

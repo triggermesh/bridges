@@ -7,20 +7,20 @@ This event target integrates with Confluent, forwarding Cloud Event messages to 
 - [Confluent event target](#confluent-event-target)
   - [Contents](#contents)
   - [Prerequisites](#prerequisites)
-  - [Creating an Elasticsearch Target](#creating-an-elasticsearch-target)
+  - [Creating an Confluent Target](#creating-an-confluent-target)
 
 ## Prerequisites
 
 A Confluent clusterand a set of credentials:
 
-- User and password to the Elasticsearch cluster.
+- User and password to the Confluent cluster.
 - An APIKey instead of User and password.
 - CACertificate if using self-signed certificate and `SkipVerify` is not configured.
 - Version 7.x is preferred.
 
-## Creating an Elasticsearch Target
+## Creating an Confluent Target
 
-Anonymized Elasticsearch API object:
+Anonymized Confluent API object:
 
 ```yaml
 apiVersion: targets.triggermesh.io/v1alpha1

@@ -1,6 +1,6 @@
 # Elasticsearch event target
 
-This event target integrates with Elasticsearch, using received Cloud Event messages to index documents.
+This event target integrates with Elasticsearch using received Cloud Event messages to index documents.
 
 ## Contents
 

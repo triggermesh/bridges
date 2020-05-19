@@ -1,6 +1,6 @@
 # Confluent event target
 
-This event target integrates with Confluent, forwarding Cloud Event messages to topics.
+This event target integrates with Confluent forwarding Cloud Event messages to topics.
 
 ## Contents
 

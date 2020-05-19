@@ -8,7 +8,10 @@ This bridge uses
 
 - SQS as a source for messages
 - A broker that receives events from SQS
-- A trigger that connects the broker with the target
+- A broker that receives SendGrid compliant events.
+- A transformation ad-hoc service
+- A subscription that will read SQS broker, send events to transformation service, and put the result in the SendGrid broker
+- A trigger that connects the SendGrid broker with the target
 - A Sendgrid target
 
 ## Parametrization

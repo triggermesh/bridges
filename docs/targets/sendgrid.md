@@ -1,6 +1,6 @@
 # SendGrid event target
 
-This event target integrates with SendGrid, using received Cloud Event messages to send emails.
+This event target integrates with SendGrid using received Cloud Event messages to send emails.
 
 ## Contents
 

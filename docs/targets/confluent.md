@@ -11,12 +11,11 @@ This event target integrates with Confluent forwarding Cloud Event messages to t
 
 ## Prerequisites
 
-A Confluent clusterand a set of credentials:
+A Confluent cluster and a [set of credentials](https://docs.confluent.io/current/cloud/using/api-keys.html):
 
 - User and password to the Confluent cluster.
-- An APIKey instead of User and password.
-- CACertificate if using self-signed certificate and `SkipVerify` is not configured.
-- Version 7.x is preferred.
+- Bootstraps servers address.
+- Topic (can be dynamically created)
 
 ## Creating an Confluent Target
 

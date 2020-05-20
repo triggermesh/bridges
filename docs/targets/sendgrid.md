@@ -12,7 +12,7 @@ This event target integrates with SendGrid using received Cloud Event messages t
 
 ## Prerequisites
 
-A SendGrid account API token
+A SendGrid [account API token](https://sendgrid.com/docs/ui/account-and-settings/api-keys/)
 
 ## Creating SendGrid Target
 

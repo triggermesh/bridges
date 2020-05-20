@@ -12,7 +12,7 @@ This event target integrates with Twilio using received Cloud Event messages to 
 
 ## Prerequisites
 
-A TWilio configured account is required to run this target:
+A Twilio [configured account](https://support.twilio.com/hc/en-us/articles/223136027-Auth-Tokens-and-How-to-Change-Them) is required to run this target:
 
 - Register a Twilio account
 - Purchase a phone number with

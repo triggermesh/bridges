@@ -1,10 +1,10 @@
-# Elasticsearch event target for Knative Eventing
+# Elasticsearch event target
 
-This event target integrates with Elasticsearch, using received Cloud Event messages to index documents.
+This event target integrates with Elasticsearch using received Cloud Event messages to index documents.
 
 ## Contents
 
-- [Elasticsearch event target for Knative Eventing](#elasticsearch-event-target-for-knative-eventing)
+- [Elasticsearch event target](#elasticsearch-event-target)
   - [Contents](#contents)
   - [Prerequisites](#prerequisites)
   - [Creating an Elasticsearch Target](#creating-an-elasticsearch-target)

@@ -1,10 +1,10 @@
-# Slack event source for Knative
+# Slack event source
 
-Slack Source enables integration between slack messages read by a bot users and Knative Eventing.
+Slack Source enables integration between slack messages read by a bot users and the event platform.
 
 ## Contents
 
-- [Slack event source for Knative](#slack-event-source-for-knative)
+- [Slack event source](#slack-event-source)
   - [Contents](#contents)
   - [Prerequisites](#prerequisites)
     - [Creating an Slack Source instance](#creating-an-slack-source-instance)
@@ -33,7 +33,6 @@ apiVersion: sources.triggermesh.io/v1alpha1
 kind: SlackSource
 metadata:
   name: triggermesh-knbot
-  namespace: knative-samples
 spec:
   slackToken:
     secretKeyRef:
@@ -42,9 +41,9 @@ spec:
   threadiness: 1
   sink:
     ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: event-display
+      apiVersion: eventing.knative.dev/v1beta1
+      kind: Broker
+      name: slack
 ```
 
 

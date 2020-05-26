@@ -16,54 +16,54 @@ apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
   annotations:
-    bridges.triggermesh.io/name: pingsource-display
-  name: pingsource-display
+    bridges.triggermesh.io/name: slack-slack
+  name: slack-slack
 spec:
   components:
     - object:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: text-message-hub
-
+          name: slack
+#definition of the Slack Source
     - object:
-        apiVersion: sources.knative.dev/v1alpha2
-        kind: PingSource
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: SlackSource
         metadata:
-          name: cron-job-source-tm
+          name: triggermesh-knbot
         spec:
-          schedule: "*/1 * * * *"
-          jsonData: '{"message": "let the event be dispatched"}'
+          slackToken:
+            secretKeyRef:
+              name: slack
+              key: token
+          threadiness: 1
           sink:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: text-message-hub
-
+              name: slack
+#definition of the Slack Target
     - object:
-        apiVersion: serving.knative.dev/v1
-        kind: Service
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SlackTarget
         metadata:
-          name: event-display
+          name: tm-slack
         spec:
-          template:
-            spec:
-              containers:
-              - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
-                name: user-container
-
+          defaultChannel: "copychannel" # This will need to be modified to reflect the channel that you have both: 1. added the bot to 2. granted proper permissions.
+          slackToken:
+            secretKeyRef:
+              name: slacktargetsecret
+              key: SLACK_TOKEN
+#definition of the Slack (Target) Trigger
     - object:
-        apiVersion: eventing.knative.dev/v1alpha1
+        apiVersion: eventing.knative.dev/v1beta1
         kind: Trigger
         metadata:
-          labels:
-            eventing.knative.dev/broker: text-message-hub
-          name: sendme-everything
+          name: slack-slack-trigger
         spec:
-          broker: text-message-hub
+          broker: slack
           subscriber:
             ref:
-              apiVersion: serving.knative.dev/v1alpha1
-              kind: Service
-              name: event-display
-
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SlackTarget
+              name: tm-slack

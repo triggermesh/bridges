@@ -1,0 +1,116 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: oracle-lambda
+  name: oraclesource-awslambdatarget
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: events-oracle
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: transform-oracle
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: oracle-source
+        spec:
+          template:
+            spec:
+              containers:
+              - image: docker.io/cab105/oracle-source:latest
+
+    - object:
+        apiVersion: serving.knative.dev/v1alpha1
+        kind: Service
+        metadata:
+          name: trans-oracle
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: docker.io/cab105/transoracle:latest
+
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: event-aws
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: events-oracle-kne-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: trans-oracle
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: transform-oracle
+
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: SinkBinding
+        metadata:
+          name: bind-oracle-source
+        spec:
+          subject:
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            name: oracle-source
+
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events-oracle
+          ceOverrides:
+            extensions:
+              sink: bound
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: AWSTarget
+        metadata:
+          name: aws-lambda-dumper-target
+        spec:
+          awsApiKey:
+            secretKeyRef:
+              name: awscreds
+              key: AWS_ACCESS_KEY_ID
+          awsApiSecret:
+            secretKeyRef:
+              name: awscreds
+              key: AWS_SECRET_ACCESS_KEY
+          lambda:
+            arn: arn:aws:lambda:us-west-2:043455440429:function:lambdadumper
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: aws-lambda-dumper-trigger
+          labels:
+            eventing.knative.dev/broker: translated-oracle-fowarder
+        spec:
+          broker: transform-oracle
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: AWSTarget
+              name: aws-lambda-dumper-target

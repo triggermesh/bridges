@@ -2,7 +2,7 @@ apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
   annotations:
-    bridges.triggermesh.io/name: oracle-lambda
+    bridges.triggermesh.io/name: oraclesource-awslambdatarget
   name: oraclesource-awslambdatarget
 spec:
   components:
@@ -11,12 +11,6 @@ spec:
         kind: Broker
         metadata:
           name: events-oracle
-
-    - object:
-        apiVersion: eventing.knative.dev/v1beta1
-        kind: Broker
-        metadata:
-          name: transform-oracle
 
     - object:
         apiVersion: serving.knative.dev/v1
@@ -61,7 +55,7 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: transform-oracle
+              name: events-oracle
 
     - object:
         apiVersion: sources.knative.dev/v1alpha1
@@ -73,6 +67,8 @@ spec:
             apiVersion: serving.knative.dev/v1
             kind: Service
             name: oracle-source
+            # The namespace is required for the SinkBiding to find the target service
+            namespace: cab
 
           sink:
             ref:
@@ -106,9 +102,12 @@ spec:
         metadata:
           name: aws-lambda-dumper-trigger
           labels:
-            eventing.knative.dev/broker: translated-oracle-fowarder
+            eventing.knative.dev/broker: events-oracle
         spec:
-          broker: transform-oracle
+          broker: events-oracle
+          filter:
+            attributes:
+              type: com.triggermesh.targets.oracledb.fn.dumper
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

@@ -2,7 +2,7 @@ apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
   annotations:
-    bridges.triggermesh.io/name: oracledb-fn-dump
+    bridges.triggermesh.io/name: oraclesource-oraclecloudtarget
   name: oraclesource-oraclecloudtarget
 spec:
   components:
@@ -11,12 +11,6 @@ spec:
         kind: Broker
         metadata:
           name: events-oracle
-
-    - object:
-        apiVersion: eventing.knative.dev/v1beta1
-        kind: Broker
-        metadata:
-          name: transform-oracle
 
     - object:
         apiVersion: serving.knative.dev/v1
@@ -51,7 +45,7 @@ spec:
           template:
             spec:
               containers:
-              - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
+              - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
                 name: user-container
 
     - object:
@@ -73,7 +67,7 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: transform-oracle
+              name: events-oracle
 
     - object:
         apiVersion: sources.knative.dev/v1alpha1
@@ -86,7 +80,6 @@ spec:
             kind: Service
             name: oracle-source
             namespace: cab
-
           sink:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
@@ -123,7 +116,7 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: oracle-fn-result
+              name: events-oracle
 
 
     - object:
@@ -132,18 +125,17 @@ spec:
         metadata:
           name: oracle-fn-dumper-target-trigger
           labels:
-            eventing.knative.dev/broker: transform-oracle
+            eventing.knative.dev/broker: events-oracle
         spec:
-          broker: transform-oracle
+          broker: events-oracle
           filter:
-            type: com.triggermesh.transform
-            source: oracle-source
+            attributes:
+              type: com.triggermesh.targets.oracledb.fn.dumper
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: OracleTarget
               name: oracle-fn-dumper-target
-
 
     - object:
         apiVersion: eventing.knative.dev/v1alpha1
@@ -151,12 +143,13 @@ spec:
         metadata:
           name: dump-oracle-fn-results-trigger
           labels:
-            eventing.knative.dev/broker: transform-oracle
+            eventing.knative.dev/broker: events-oracle
         spec:
-          broker: transform-oracle
+          broker: events-oracle
           filter:
-            type: functions.oracletargets.targets.triggermesh.io
-            source: ocid1.fnapp.oc1.phx.aaaaaaaaaehdhsmharxvyp4pvnsgsnd35am5u7ckjzivwmsmove37eckjika
+            attributes:
+              type: functions.oracletargets.targets.triggermesh.io
+              source: ocid1.fnapp.oc1.phx.aaaaaaaaaehdhsmharxvyp4pvnsgsnd35am5u7ckjzivwmsmove37eckjika
           subscriber:
             ref:
               apiVersion: serving.knative.dev/v1

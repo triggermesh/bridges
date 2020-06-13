@@ -1,0 +1,11 @@
+# Knative service for debugging
+
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: trans-oracle
+spec:
+  template:
+    spec:
+      containers:
+      - image: docker.io/cab105/transoracle:latest

@@ -1,0 +1,49 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: slack-confluent
+  name: slack-confluent
+spec:
+  components:
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitLabSource
+        metadata:
+          name: gitlab-confluent-demo
+        spec:
+          accessToken:
+            secretKeyRef:
+              key: accessToken
+              name: gitlabsecret
+          eventTypes:
+          - push_events
+          projectUrl: 'https://gitlab.com/sebgoa/kdemo'
+          secretToken:
+            secretKeyRef:
+              key: secretToken
+              name: gitlabsecret
+          sink:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ConfluentTarget
+              name: confluent-demo
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ConfluentTarget
+        metadata:
+          name: confluent-demo
+        spec:
+          topic: slack-in
+          securityprotocol: SASL_SSL
+          saslmechanism: PLAIN
+          bootstrapservers: pkc-4yyd6.us-east1.gcp.confluent.cloud:9092
+          username:
+            secretKeyRef:
+              name: confluent
+              key: username
+          password:
+            secretKeyRef:
+              name: confluent
+              key: password

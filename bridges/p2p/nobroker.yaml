@@ -1,0 +1,33 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: pingsource-display
+  name: pingsource-display
+spec:
+  components:
+    - object:
+        apiVersion: sources.knative.dev/v1alpha2
+        kind: PingSource
+        metadata:
+          name: cron-job-source-tm
+        spec:
+          schedule: "*/1 * * * *"
+          jsonData: '{"message": "let the event be dispatched"}'
+          sink:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: event-display
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: event-display
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
+                name: user-container

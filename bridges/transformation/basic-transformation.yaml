@@ -1,0 +1,68 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: transformation-pattern
+  name: transformation-pattern
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: raw-events
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: transformed-events
+
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: subscribed-transformation
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: raw-events-kne-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: transformation-sample
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: transformed-events
+
+    - object:
+        apiVersion: serving.knative.dev/v1alpha1
+        kind: Service
+        metadata:
+          name: transformation-sample
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: ""
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: transformation-target
+        spec:
+          broker: transformed-events
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ""
+              name: ""
+
+

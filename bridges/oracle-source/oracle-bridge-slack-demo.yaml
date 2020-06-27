@@ -1,0 +1,185 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: oracle-bridge-slack-demo
+  name: oracle-bridge-slack-demo
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: events-oracle
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: oracle-source
+        spec:
+          template:
+            spec:
+              containers:
+              - image: docker.io/cab105/oracle-source:latest
+
+    - object:
+        apiVersion: serving.knative.dev/v1alpha1
+        kind: Service
+        metadata:
+          name: trans-oracle
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: docker.io/cab105/oracledemotrans-slack:latest
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: event-display
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
+                name: user-container
+
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: event-oracle-cloud
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: events-oracle-kne-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: trans-oracle
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events-oracle
+
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: SinkBinding
+        metadata:
+          name: bind-oracle-source
+        spec:
+          subject:
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            name: oracle-source
+            namespace: cab
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events-oracle
+          ceOverrides:
+            extensions:
+              sink: bound
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: OracleTarget
+        metadata:
+          name: oracle-fn-dumper-target
+        spec:
+          oracleApiPrivateKey:
+            secretKeyRef:
+              name: oraclecreds
+              key: apiKey
+          oracleApiPrivateKeyPassphrase:
+            secretKeyRef:
+              name: oraclecreds
+              key: apiPassphrase
+          oracleApiPrivateKeyFingerprint:
+            secretKeyRef:
+              name: oraclecreds
+              key: apiKeyFingerprint
+          oracleTenancy: ocid1.tenancy.oc1..aaaaaaaaav23f45mqyxmwu4x3s2uhuh4rb2bwdpgb5kbpjqvwiiqufhsq6za
+          oracleUser: ocid1.user.oc1..aaaaaaaacaxtveoy4zx7rsg7lanexmouxjxay6godthrfsocpl6ggrfpbiuq
+          oracleRegion: us-phoenix-1
+          function:
+            function: ocid1.fnfunc.oc1.phx.aaaaaaaaaajrgy4on66e6krko73h2im5qaiiagecg5hmbcqib2kpbzlcy3bq
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events-oracle
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SlackTarget
+        metadata:
+          name: tm-slack-target
+        spec:
+          defaultChannel: test
+          slackToken:
+             secretKeyRef:
+               name: slacktargetsecret
+               key: SLACK_TOKEN
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: oracle-fn-dumper-target-trigger
+          labels:
+            eventing.knative.dev/broker: events-oracle
+        spec:
+          broker: events-oracle
+          filter:
+            attributes:
+              type: com.triggermesh.targets.oracle.function.dogstore-neworder
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: OracleTarget
+              name: oracle-fn-dumper-target
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: slack-target-trigger
+          labels:
+            eventing.knative.dev/broker: events-oracle
+        spec:
+          broker: events-oracle
+          filter:
+            attributes:
+              type: com.triggermesh.targets.slack
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SlackTarget
+              name: tm-slack-target
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: dump-oracle-fn-results-trigger
+          labels:
+            eventing.knative.dev/broker: events-oracle
+        spec:
+          broker: events-oracle
+          filter:
+            attributes:
+              type: functions.oracletargets.targets.triggermesh.io
+              source: ocid1.fnapp.oc1.phx.aaaaaaaaaehdhsmharxvyp4pvnsgsnd35am5u7ckjzivwmsmove37eckjika
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: event-display

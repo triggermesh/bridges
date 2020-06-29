@@ -3,7 +3,6 @@ kind: Bridge
 metadata:
   annotations:
     bridges.triggermesh.io/description: ""
-    bridges.triggermesh.io/name: harmless-link
   name: zendesk-flow
 spec:
   components:
@@ -47,12 +46,12 @@ spec:
       metadata:
         name: foobarzendesk
       spec:
-        email: jeff@triggermesh.com
-        subdomain: tmdev1
-        subject: hey what is going on
+        email: ""
+        subdomain: ""
+        subject: ""
         token:
           secretKeyRef:
             key: token
-            name: zendesk
+            name: ""
     options:
       enableResync: false

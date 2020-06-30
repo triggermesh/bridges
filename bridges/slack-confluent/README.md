@@ -13,7 +13,7 @@ This bridge uses
 
 ## Parametrization
 
-Customization of Confluent's instance is required. Optionally the Slack source can also be customized to verify recewived messages signature.
+Customization of Confluent's instance is required. Optionally the Slack source can also be customized to verify received messages signature.
 
 - Refer to [Slack docs](../../docs/sources/slack.md) for configuring Slack.
 - Refer to [Confluent docs](../../docs/targets/confluent.md) for configuring Confluent.

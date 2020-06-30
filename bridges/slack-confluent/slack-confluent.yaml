@@ -1,0 +1,57 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: slack-confluent
+  name: slack-confluent
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: slack
+
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: SlackSource
+        metadata:
+          name: triggermesh-slack-bot
+        spec:
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: slack
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: slack-confluent
+        spec:
+          broker: slack
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ConfluentTarget
+              name: confluent-demo
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ConfluentTarget
+        metadata:
+          name: confluent-demo
+        spec:
+          topic: <KAFKA-TOPIC>
+          securityprotocol: SASL_SSL
+          saslmechanism: PLAIN
+          bootstrapservers: <CONFLUENT-HOST:CONFLUENT-PORT>
+          username:
+            secretKeyRef:
+              name: confluent
+              key: username
+          password:
+            secretKeyRef:
+              name: confluent
+              key: password

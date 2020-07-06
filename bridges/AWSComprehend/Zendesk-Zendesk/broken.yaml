@@ -1,0 +1,135 @@
+
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: zendesk
+---
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: transform-zendesk
+
+---
+
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: zendesk-comprehiend
+
+spec:
+  template:
+    metadata:
+        annotations:
+          autoscaling.knative.dev/minScale: "1"
+    spec:
+      containers:
+      - image: ko://github.com/triggermesh/bridges/transformation/zenformation/
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIAQUHRFMYWWSFN4J42
+        - name: AWS_SECRET_ACCESS_KEY
+          value: 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
+        - name: LANGUAGE
+          value: en
+        - name: AWS_REGION
+          value: us-east-1
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zendesktarget
+type: Opaque
+stringData:
+   token: <ZENDESK API TOKEN>
+  
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zendesksource
+type: Opaque
+stringData:
+  token: <ZENDESK API TOKEN>
+  password: pasdfaca
+
+---
+
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: zendesk
+---
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: transform-zendesk
+
+---
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: ZendeskSource
+        metadata:
+          name: zendesksource
+        spec:
+          email: jeff@triggermesh.com
+          username: user
+          token:
+                    secretKeyRef:
+                      name: zendesksource
+                      key: token
+          password:
+                    secretKeyRef:
+                      name: zendesksource
+                      key: password            
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: zendesk
+
+---
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: translate
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: zendesk-source-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: zendesk-comprehiend
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: transform-zendesk
+
+---
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ZendeskTarget
+        metadata:
+          name: zendesktarget
+        spec:
+          subject: TmBridge
+          subdomain: tmdev1
+          email: jeff@triggermesh.com
+          token:
+            secretKeyRef:
+              name: zendesktarget
+              key: token
+---
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: zendesk-trigger
+        spec:
+          broker: transform-zendesk
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ZendeskTarget
+              name: zendesktarget

@@ -1,0 +1,87 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: zendesk-comprehiend-zendesk
+  name: zendesk-comprehiend-zendesk
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: zendesk
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: transform-zendesk
+
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: ZendeskSource
+        metadata:
+          name: zendesksource
+        spec:
+          email: <EMAIL-ADDRESS>
+          username: <USERNAME>
+          token:
+                    secretKeyRef:
+                      name: zendesksource
+                      key: token
+          password:
+                    secretKeyRef:
+                      name: zendesksource
+                      key: password            
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: zendesk
+
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: transform-subscription
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: zendesk-source-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: zendesk-comprehiend
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: transform-zendesk
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ZendeskTarget
+        metadata:
+          name: zendesktarget
+        spec:
+          subject: <SUBJECT>
+          subdomain: <SUBDOMAIN>
+          email: <EMAIL-ADDRESS>
+          token:
+            secretKeyRef:
+              name: zendesktarget
+              key: token
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: zendesk-trigger
+        spec:
+          broker: transform-zendesk
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ZendeskTarget
+              name: zendesktarget

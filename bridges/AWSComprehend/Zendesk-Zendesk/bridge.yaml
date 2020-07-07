@@ -8,7 +8,7 @@ spec:
     metadata:
     spec:
       containers:
-      - image: ko://github.com/triggermesh/transformations/zenformation/cmd/
+      - image: gcr.io/neffdev/zenformation:latest
         env:
         - name: AWS_ACCESS_KEY_ID
           value: '' 

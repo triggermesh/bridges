@@ -25,7 +25,6 @@ From [zendesk](https://www.zendesk.com/) :
 * [API Token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token)
 * [subdomain](https://support.zendesk.com/hc/en-us/articles/221682747-Where-can-I-find-my-Zendesk-subdomain-)
 
-The source for the translation is at [https://github.com/sebgoa/transform/tree/master/translate](https://github.com/sebgoa/transform/tree/master/translate)
 
 
 

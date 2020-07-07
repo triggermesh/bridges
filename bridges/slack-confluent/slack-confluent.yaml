@@ -44,13 +44,11 @@ spec:
           name: confluent-demo
         spec:
           topic: <KAFKA-TOPIC>
-          securityprotocol: SASL_SSL
-          saslmechanism: PLAIN
-          bootstrapservers: <CONFLUENT-HOST:CONFLUENT-PORT>
-          username:
-            secretKeyRef:
-              name: confluent
-              key: username
+          securityProtocol: SASL_SSL
+          saslMechanism: PLAIN
+          bootstrapServers:
+            - <CONFLUENT-HOST:CONFLUENT-PORT>
+          username: <USERNAME>
           password:
             secretKeyRef:
               name: confluent

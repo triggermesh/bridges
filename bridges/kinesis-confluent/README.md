@@ -1,22 +1,19 @@
 # Forward Kinesis messages to a Confluent Kafka cluster
 
-Create a secret containing your AWS API credentials
+This bridge listens to a kinesis stream and send received messages to a Confluent topic.
 
+## Components
 
-Create a secret containing your Confluent credentials
+This bridge uses
 
-```
-kubectl apply -f secret.yaml
-```
+- AWS Kinesis source that ingest events into Triggermesh.
+- A broker that receives events from Kinesis.
+- A Confluent Target instance.
+- A trigger that connects the broker with the target.
 
-Configure the Bridge to your liking (e.g change the ARN of the Kinesis stream) and create it
+## Parametrization
 
-```
-kubectl apply -f kinesis-confluent.yaml
-```
+Customization of Confluent's instance is required to provide credentials, servers, topics and connection options. Kinesis source is also customizable to provide ARN and credentials
 
-Now put a message in your Kinesis stream and see it appear in your Confluent cluster, for example
-
-```
-aws kinesis put-record --stream-name everybridge --partition-key 123 --data 'hi everyone'
-```
+- Refer to [AWS docs](../../docs/sources/aws.md) for configuring AWS Kinesis.
+- Refer to [Confluent docs](../../docs/targets/confluent.md) for configuring Confluent.

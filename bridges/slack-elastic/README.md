@@ -13,7 +13,7 @@ This bridge uses
 
 ## Parametrization
 
-Customization of URL parameter for Elasticsearch and secret creation for both Elasticsearch and Slack is required.
+Customization of URL parameter and secret for Elasticsearch authentication are required.  Optionally the Slack source can also be customized to verify received messages signature.
 
 - Refer to [Slack docs](../../docs/sources/slack.md) for configuring Slack
 - Refer to [Elasticsearch docs](../../docs/targets/elasticsearch.md) for configuring Elasticsearch.

@@ -32,18 +32,16 @@ spec:
         metadata:
           name: triggermesh-confluent
         spec:
-          bootstrapservers:
-            secretKeyRef:
-              key: bootstrapservers
-              name: confluent
+          topic: <KAFKA-TOPIC>
+          securityProtocol: SASL_SSL
+          saslMechanism: PLAIN
+          bootstrapServers:
+            - <CONFLUENT-HOST:CONFLUENT-PORT>
+          username: <USERNAME>
           password:
             secretKeyRef:
+              name: confluent
               key: password
-              name: confluent
-          username:
-            secretKeyRef:
-              key: username
-              name: confluent
 
     - object:
         apiVersion: eventing.knative.dev/v1beta1

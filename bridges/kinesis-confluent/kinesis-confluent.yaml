@@ -11,7 +11,7 @@ spec:
         kind: Broker
         metadata:
           name: events-aws-kinesis
-            
+
     - object:
         apiVersion: sources.knative.dev/v1alpha2
         kind: ContainerSource
@@ -77,17 +77,15 @@ spec:
         metadata:
           name: confluent-demo
         spec:
-          username:
-            secretKeyRef:
-              name: confluent
-              key: username
+          topic: <KAFKA-TOPIC>
+          securityProtocol: SASL_SSL
+          saslMechanism: PLAIN
+          bootstrapServers:
+            - <CONFLUENT-HOST:CONFLUENT-PORT>
+          username: <USERNAME>
           password:
             secretKeyRef:
               name: confluent
               key: password
-          bootstrapservers:
-            secretKeyRef:
-              name: confluent
-              key: bootstrapservers
 
 

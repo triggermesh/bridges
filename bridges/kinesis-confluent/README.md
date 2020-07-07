@@ -1,6 +1,6 @@
 # Forward Kinesis messages to a Confluent Kafka cluster
 
-This bridge listens to a kinesis stream and send received messages to a Confluent topic.
+This bridge listens to a kinesis stream and sends received messages to a Confluent topic.
 
 ## Components
 

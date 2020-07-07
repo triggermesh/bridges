@@ -1,3 +1,25 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: comprehiend
+
+spec:
+  template:
+    metadata:
+    spec:
+      containers:
+      - image: ko://github.com/triggermesh/transformations/zenformation/cmd/
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: '' 
+        - name: AWS_SECRET_ACCESS_KEY
+          value: '' 
+          # LANGUAGE will tell Comprehend what language to expect.
+        - name: LANGUAGE
+          value: en
+        - name: AWS_REGION
+          value: us-east-1
+---
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
@@ -53,7 +75,7 @@ spec:
             ref:
               apiVersion: serving.knative.dev/v1
               kind: Service
-              name: zendesk-comprehiend
+              name: comprehiend
           reply:
             ref:
               apiVersion: eventing.knative.dev/v1beta1

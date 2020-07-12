@@ -1,24 +1,22 @@
-apiVersion: serving.knative.dev/v1
-kind: Service
+# This is an EXAMPLE deployment. To utilize this file; replace all of the values noted '#EXAMPLE' with valid data. 
+apiVersion: v1
+kind: Secret
 metadata:
-  name: comprehiend
+  name: zendesktargetsecret
+type: Opaque
+stringData:
+   token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE  
+  
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zendesksource
+type: Opaque
+stringData:
+  token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE 
+  password: 'Pa$$sw0rd' #EXAMPLE
 
-spec:
-  template:
-    metadata:
-    spec:
-      containers:
-      - image: gcr.io/neffdev/zenformation:latest
-        env:
-        - name: AWS_ACCESS_KEY_ID
-          value: '' 
-        - name: AWS_SECRET_ACCESS_KEY
-          value: '' 
-          # LANGUAGE will tell Comprehend what language to expect.
-        - name: LANGUAGE
-          value: en
-        - name: AWS_REGION
-          value: us-east-1
 ---
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
@@ -32,68 +30,85 @@ spec:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: zendesk
+          name: broker-zendesk
     - object:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: transform-zendesk
-
+          name: transform-zendesk   
     - object:
         apiVersion: sources.triggermesh.io/v1alpha1
         kind: ZendeskSource
         metadata:
           name: zendesksource
         spec:
-          email: <EMAIL-ADDRESS>
-          username: <USERNAME>
+          email: jeffthenaef@gmail.com
+          username: jeff
+          subdomain: tmdev2
           token:
-                    secretKeyRef:
-                      name: zendesksource
-                      key: token
+           secretKeyRef:
+             name: zendesksource
+             key: token
           password:
-                    secretKeyRef:
-                      name: zendesksource
-                      key: password            
+            secretKeyRef:
+              name: zendesksource
+              key: password            
           sink:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: zendesk
-
+              name: broker-zendesk
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: zendesk-comprehiend
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/neffdev/zenformation:latest
+                env:
+                - name: AWS_ACCESS_KEY_ID
+                  value: 'XKIAOF3XXCNCA4ZKVZ6A' #EXAMPLE
+                - name: AWS_SECRET_ACCESS_KEY
+                  value: 'XTNmxPaEV9yrC732kAhCEhjUawVVMQ51xUPIFJiO' #EXAMPLE
+                - name: LANGUAGE
+                  value: en
+                - name: AWS_REGION
+                  value: us-east-1
     - object:
         apiVersion: messaging.knative.dev/v1beta1
         kind: Subscription
         metadata:
-          name: transform-subscription
+          name: subscription-zendesk
         spec:
           channel:
             apiVersion: messaging.knative.dev/v1beta1
             kind: InMemoryChannel
-            name: zendesk-source-trigger
+            name: broker-zendesk-kne-trigger
           subscriber:
             ref:
               apiVersion: serving.knative.dev/v1
               kind: Service
-              name: comprehiend
+              name: zendesk-comprehiend
           reply:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
               name: transform-zendesk
-
     - object:
-        apiVersion: targets.triggermesh.io/v1alpha1
-        kind: ZendeskTarget
-        metadata:
-          name: zendesktarget
-        spec:
-          subject: <SUBJECT>
-          subdomain: <SUBDOMAIN>
-          email: <EMAIL-ADDRESS>
-          token:
+         apiVersion: targets.triggermesh.io/v1alpha1
+         kind: ZendeskTarget
+         metadata:
+          name: triggermesh-zendesk
+         spec:
+           subject: 'Auto Express Ticket' #EXAMPLE
+           subdomain: 'autoExpress' #EXAMPLE
+           email: 'Joe@autoParts.com' #EXAMPLE
+           token:
             secretKeyRef:
-              name: zendesktarget
+              name: zendesktargetsecret
               key: token
     - object:
         apiVersion: eventing.knative.dev/v1beta1
@@ -106,4 +121,4 @@ spec:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: ZendeskTarget
-              name: zendesktarget
+              name: triggermesh-zendesk

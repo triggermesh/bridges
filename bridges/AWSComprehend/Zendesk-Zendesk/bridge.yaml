@@ -2,11 +2,19 @@
 apiVersion: v1
 kind: Secret
 metadata:
+  name: awscomp
+type: Opaque
+stringData:
+   accesskey: XKIAOF3XXCNCA4ZKVZ6A #EXAMPLE
+   secretkey: XTNmxPaEV9yrC732kAhCEhjUawVVMQ51xUPIFJiO #EXAMPLE
+---
+apiVersion: v1
+kind: Secret
+metadata:
   name: zendesktargetsecret
 type: Opaque
 stringData:
    token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE  
-  
 ---
 apiVersion: v1
 kind: Secret
@@ -16,7 +24,6 @@ type: Opaque
 stringData:
   token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE 
   password: 'Pa$$sw0rd' #EXAMPLE
-
 ---
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
@@ -67,12 +74,18 @@ spec:
           template:
             spec:
               containers:
-              - image: gcr.io/neffdev/zenformation:latest
+              - image: gcr.io/neffdev/zenformation:latest 
                 env:
-                - name: AWS_ACCESS_KEY_ID
-                  value: 'XKIAOF3XXCNCA4ZKVZ6A' #EXAMPLE
-                - name: AWS_SECRET_ACCESS_KEY
-                  value: 'XTNmxPaEV9yrC732kAhCEhjUawVVMQ51xUPIFJiO' #EXAMPLE
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom: 
+                secretKeyRef:
+                  name: awscomp
+                  key: accesskey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom: 
+                secretKeyRef:
+                  name: awscomp
+                  key: secretkey
                 - name: LANGUAGE
                   value: en
                 - name: AWS_REGION

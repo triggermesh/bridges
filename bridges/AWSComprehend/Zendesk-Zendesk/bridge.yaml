@@ -49,9 +49,9 @@ spec:
         metadata:
           name: zendesksource
         spec:
-          email: jeffthenaef@gmail.com
-          username: jeff
-          subdomain: tmdev2
+          email: 'Joe@autoParts.com' #EXAMPLE
+          username: 'Joe' #EXAMPLE
+          subdomain: 'autoExpress' #EXAMPLE
           token:
            secretKeyRef:
              name: zendesksource

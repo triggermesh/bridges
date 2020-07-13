@@ -21,7 +21,13 @@ spec:
           template:
             spec:
               containers:
-              - image: docker.io/cab105/oracle-source:latest
+              - image: gcr.io/triggermesh/oracle-source:latest
+                env:
+                  - name: PSK
+                    valueFrom:
+                      secretKeyRef:
+                        name: oraclesourcepsk
+                        key: psk
 
     - object:
         apiVersion: serving.knative.dev/v1alpha1
@@ -123,11 +129,10 @@ spec:
         metadata:
           name: tm-slack-target
         spec:
-          defaultChannel: test
-          slackToken:
+          token:
              secretKeyRef:
                name: slacktargetsecret
-               key: SLACK_TOKEN
+               key: token
 
     - object:
         apiVersion: eventing.knative.dev/v1alpha1
@@ -140,7 +145,7 @@ spec:
           broker: events-oracle
           filter:
             attributes:
-              type: com.triggermesh.targets.oracle.function.dogstore-neworder
+              type: com.triggermesh.targets.oracle.function.partsunlimited-neworder
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
@@ -158,7 +163,7 @@ spec:
           broker: events-oracle
           filter:
             attributes:
-              type: com.triggermesh.targets.slack
+              type: com.slack.webapi.chat.postMessage
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

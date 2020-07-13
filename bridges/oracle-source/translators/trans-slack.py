@@ -13,7 +13,7 @@ def sink():
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
     headers['Content-Type']='application/json'
-    headers['Ce-Source']='translators.triggermesh.io/dogstore-demo-translator'
+    headers['Ce-Source']='translators.triggermesh.io/partsunlimited-demo-translator'
     headers['Ce-Type']='com.triggermesh.targets.sink'
     body = {}
 
@@ -28,7 +28,7 @@ def sink():
 app = Flask(__name__)
 @app.route('/', methods=['POST', 'GET'])
 def trans():
-    base_url = "http://54.184.236.116:8080/api"
+    base_url = "https://partunlimited.demo.triggermesh.io:8080/api" # The API endpoint for the parts store
     conn = Connection(base_url)
 
     ce = request.get_json(force=True)
@@ -41,7 +41,7 @@ def trans():
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
     headers['Content-Type']='application/json'
-    headers['Ce-Source']='translators.triggermesh.io/dogstore-demo-translator'
+    headers['Ce-Source']='translators.triggermesh.io/partsunlimited-demo-translator'
 
     # For events we don't care about, just return
     if ceSource is not None and not ceSource.startswith('tmtestdb.demo.triggermesh.com/'):
@@ -72,18 +72,15 @@ def trans():
 
     # Handle the new order event by sending it to an oracle cloud function
     if ceSource == "tmtestdb.demo.triggermesh.com/neworder":
-        headers['Ce-Type']='com.triggermesh.targets.oracle.function.dogstore-neworder'
+        headers['Ce-Type']='com.slack.webapi.chat.postMessage'
         # Need to extract the order details
         resp = conn.request_get("/order/" + str(ce["new"]["ID"]))
         respBody = json.loads(resp[u'body'])
 
         if ce["op"] == "INSERT":
             body = {
-                "name": respBody["user"]["name"],
-                "address": respBody["user"]["address"],
-                "kibble": respBody["totalCost"],
-                "paymentMethod": respBody["paymentType"],
-                "ordered": respBody["dateOrdered"]
+                "channel": "test",
+                "text": respBody["user"]["name"] + " at " + respBody["user"]["address"] + "just spent" + respBody["totalCost"]
             }
 
             return app.response_class(

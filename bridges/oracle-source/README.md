@@ -35,3 +35,10 @@ that already exists
 
 This requires an active Zendesk subdomain and point-of-contact that is registered
 within Zendesk.
+
+### Translators
+
+The translators are pointing to the Triggermesh's docker repo, and should be
+changed to use the end user's preferred container repo.  In addition, there
+is an API server that is hard-coded in each translator to pull additional
+details that will need to be altered to reflect the sample environment.

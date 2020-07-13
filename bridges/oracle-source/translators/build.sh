@@ -2,7 +2,7 @@
 
 # Perform the docker build/push of the translator
 
-REPO=cab105
+REPO=gcr.io/triggermesh
 IMAGE_SLACK=${REPO}/oracledemotrans-slack
 IMAGE_ZENDESK=${REPO}/oracledemotrans-zendesk
 

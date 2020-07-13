@@ -21,7 +21,13 @@ spec:
           template:
             spec:
               containers:
-              - image: docker.io/cab105/oracle-source:latest
+              - image: gcr.io/triggermesh/oracle-source:latest
+                env:
+                  - name: PSK
+                    valueFrom:
+                      secretKeyRef:
+                        name: oraclesourcepsk
+                        key: psk
 
     - object:
         apiVersion: serving.knative.dev/v1alpha1
@@ -123,9 +129,9 @@ spec:
         metadata:
           name: tm-zendesk-target
         spec:
-          subject: Dogstore reorder request
-          subdomain: dogstoredomain
-          email: fulfillment@dogstore.com
+          subject: Parts Unlimited reorder request
+          subdomain: tmdev0
+          email: dev@triggermesh.com
           token:
              secretKeyRef:
                name: zendesk
@@ -142,7 +148,7 @@ spec:
           broker: events-oracle
           filter:
             attributes:
-              type: com.triggermesh.targets.oracle.function.dogstore-neworder
+              type: com.triggermesh.targets.oracle.function.partsunlimited-neworder
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
@@ -160,7 +166,7 @@ spec:
           broker: events-oracle
           filter:
             attributes:
-              type: com.triggermesh.targets.zendesk
+              type: com.zendesk.ticket.create
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

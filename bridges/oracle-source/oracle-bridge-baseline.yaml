@@ -1,0 +1,77 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: oracle-bridge-baseline-demo
+  name: oracle-bridge-baseline-demo
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: events-oracle
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: oracle-source
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/triggermesh/oracle-source:latest
+                env:
+                  - name: PSK
+                    valueFrom:
+                      secretKeyRef:
+                        name: oraclesourcepsk
+                        key: psk
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: event-display
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
+                name: user-container
+
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: SinkBinding
+        metadata:
+          name: bind-oracle-source
+        spec:
+          subject:
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            name: oracle-source
+            namespace: cab
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: events-oracle
+          ceOverrides:
+            extensions:
+              sink: bound
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: dump-oracle-fn-results-trigger
+          labels:
+            eventing.knative.dev/broker: events-oracle
+        spec:
+          broker: events-oracle
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: event-display

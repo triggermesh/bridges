@@ -80,7 +80,7 @@ def trans():
         if ce["op"] == "INSERT":
             body = {
                 "channel": "test",
-                "text": respBody["user"]["name"] + " at " + respBody["user"]["address"] + "just spent" + respBody["totalCost"]
+                "text": respBody["user"]["name"] + " at " + respBody["user"]["address"] + "just spent" + str(respBody["totalCost"])
             }
 
             return app.response_class(

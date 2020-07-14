@@ -21,7 +21,13 @@ spec:
           template:
             spec:
               containers:
-              - image: docker.io/cab105/oracle-source:latest
+              - image: gcr.io/triggermesh/oracle-source:latest
+                env:
+                  - name: PSK
+                    valueFrom:
+                      secretKeyRef:
+                        name: oraclesourcepsk
+                        key: psk
 
     - object:
         apiVersion: serving.knative.dev/v1

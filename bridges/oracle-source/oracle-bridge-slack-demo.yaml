@@ -40,7 +40,7 @@ spec:
           template:
             spec:
               containers:
-              - image: docker.io/cab105/oracledemotrans-slack:latest
+              - image: grc.io/triggermesh/oracledemotrans-slack:latest
 
     - object:
         apiVersion: serving.knative.dev/v1

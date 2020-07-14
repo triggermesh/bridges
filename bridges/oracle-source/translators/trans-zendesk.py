@@ -82,7 +82,7 @@ def trans():
             body = {
                 "name": respBody["user"]["name"],
                 "address": respBody["user"]["address"],
-                "kibble": respBody["totalCost"],
+                "totalCost": respBody["totalCost"],
                 "paymentMethod": respBody["paymentType"],
                 "ordered": respBody["dateOrdered"]
             }

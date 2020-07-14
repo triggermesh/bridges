@@ -40,7 +40,7 @@ spec:
           template:
             spec:
               containers:
-              - image: docker.io/cab105/oracledemotrans-zendesk:latest
+              - image: grc.io/triggermesh/oracledemotrans-zendesk:latest
 
     - object:
         apiVersion: serving.knative.dev/v1
@@ -130,7 +130,7 @@ spec:
           name: tm-zendesk-target
         spec:
           subject: Parts Unlimited reorder request
-          subdomain: tmdev0
+          subdomain: triggermesh
           email: dev@triggermesh.com
           token:
              secretKeyRef:

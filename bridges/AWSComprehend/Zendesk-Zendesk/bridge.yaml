@@ -14,7 +14,8 @@ metadata:
   name: zendesktargetsecret
 type: Opaque
 stringData:
-   token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE  
+   token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE 
+  
 ---
 apiVersion: v1
 kind: Secret
@@ -23,7 +24,8 @@ metadata:
 type: Opaque
 stringData:
   token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ' #EXAMPLE 
-  password: 'Pa$$sw0rd' #EXAMPLE
+  password: pass
+
 ---
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
@@ -74,22 +76,22 @@ spec:
           template:
             spec:
               containers:
-              - image: gcr.io/neffdev/zenformation:latest 
+              - image: gcr.io/neffdev/zenformation:latest
                 env:
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom: 
-                secretKeyRef:
-                  name: awscomp
-                  key: accesskey
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom: 
-                secretKeyRef:
-                  name: awscomp
-                  key: secretkey
-                - name: LANGUAGE
-                  value: en
-                - name: AWS_REGION
-                  value: us-east-1
+                  - name: AWS_ACCESS_KEY_ID
+                    valueFrom: 
+                      secretKeyRef:
+                        name: awscomp
+                        key: accesskey
+                  - name: AWS_SECRET_ACCESS_KEY
+                    valueFrom: 
+                      secretKeyRef:
+                        name: awscomp
+                        key: secretkey
+                  - name: LANGUAGE
+                    value: 'en' #Example 
+                  - name: AWS_REGION
+                    value: 'us-east-1' #Example 
     - object:
         apiVersion: messaging.knative.dev/v1beta1
         kind: Subscription

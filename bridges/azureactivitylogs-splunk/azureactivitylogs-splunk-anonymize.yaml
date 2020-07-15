@@ -1,0 +1,101 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: &bridgename azureactivitylogs-splunk-anonymize
+  annotations:
+    bridges.triggermesh.io/name: *bridgename
+spec:
+  components:
+
+    # Event brokers
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: &rawbroker raw-events
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: &transformbroker transformed-events
+
+    # Event source
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: AzureActivityLogsSource
+        metadata:
+          name: activitylogs
+        spec:
+          eventHubsSASPolicyID: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.EventHub/namespaces/{namespaceName}/authorizationRules/{authorizationRuleName}
+          auth:
+            servicePrincipal:
+              clientID:
+                value: '{clientId}'
+              clientSecret:
+                value: '{clientSecret}'
+              tenantID:
+                value: '{tenantId}'
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: *rawbroker
+
+    # Transformation service
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: &transformname transform-anonymize
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: raw-events-kne-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: *transformname
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: *transformbroker
+    - object:
+        apiVersion: serving.knative.dev/v1alpha1
+        kind: Service
+        metadata:
+          name: *transformname
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: ""
+
+    # Event target 
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: &targetname splunk
+        spec:
+          broker: *transformbroker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SplunkTarget
+              name: *targetname
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SplunkTarget
+        metadata:
+          name: *targetname
+        spec:
+          endpoint: '{endpointUrl}'
+          token:
+            valueFromSecret:
+              name: '{secret}'
+              key: token

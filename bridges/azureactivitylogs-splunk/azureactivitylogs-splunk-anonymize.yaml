@@ -73,7 +73,7 @@ spec:
           template:
             spec:
               containers:
-              - image: ""
+              - image: gcr.io/triggermesh/bridge-examples/azureactivitylogs-splunk-transform-anonymize
 
     # Event target 
     - object:

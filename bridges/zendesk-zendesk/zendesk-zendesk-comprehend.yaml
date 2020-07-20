@@ -1,0 +1,121 @@
+# This is an EXAMPLE Bridge. Before deploying it, replace all of the placeholder values with valid data. 
+---
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: &bridgename zendesk-comprehend-zendesk
+  annotations:
+    bridges.triggermesh.io/name: *bridgename
+spec:
+  components:
+
+    # Event brokers
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: &rawbroker raw-events
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: &transformbroker transformed-events
+
+    # Event source
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: ZendeskSource
+        metadata:
+          name: zendesk
+        spec:
+          email: &email '<ZENDESK ACCOUNT USER EMAIL>'
+          subdomain: &subdomain '<ZENDESK TENANT SUBDOMAIN>'
+          token:
+            secretKeyRef:
+              name: zendesk-api
+              key: token
+          webhookUsername: '<SOME ARBITRARY USERNAME>'
+          webhookPassword:
+            secretKeyRef:
+              name: zendesk-api
+              key: webhookPassword
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: *rawbroker
+
+    # Transformation service
+    - object:
+        apiVersion: messaging.knative.dev/v1beta1
+        kind: Subscription
+        metadata:
+          name: &transformname transform-sentiment-tag
+        spec:
+          channel:
+            apiVersion: messaging.knative.dev/v1beta1
+            kind: InMemoryChannel
+            name: raw-events-kne-trigger
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: *transformname
+          reply:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: *transformbroker
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: *transformname
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/triggermesh/bridge-examples/zendesk-zendesk-transform-sentiment-tag
+                env:
+                  - name: AWS_ACCESS_KEY_ID
+                    valueFrom: 
+                      secretKeyRef:
+                        name: awscomprehend
+                        key: accessKeyId
+                  - name: AWS_SECRET_ACCESS_KEY
+                    valueFrom: 
+                      secretKeyRef:
+                        name: awscomprehend
+                        key: secretAccessKey
+                  - name: LANGUAGE
+                    value: en 
+                  - name: AWS_REGION
+                    value: '<AWS REGION>'
+
+    # Event target 
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: &targetname zendesk
+        spec:
+          broker: *transformbroker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ZendeskTarget
+              name: *targetname
+    - object:
+         apiVersion: targets.triggermesh.io/v1alpha1
+         kind: ZendeskTarget
+         metadata:
+          name: *targetname
+         spec:
+           email: *email
+           subdomain: *subdomain
+           token:
+            secretKeyRef:
+              name: zendesk-api
+              key: token

@@ -38,7 +38,7 @@ It comes in 2 flavours:
 
     ![Anonymized fields](./assets/splunk_results.png)
 
-Please refer to the [TriggerMesh documentation][tm-doc] for more information about configuring the aformentioned event
+Please refer to the [TriggerMesh documentation][tm-doc] for more information about configuring the aforementioned event
 sources and targets.
 
 [tm-doc]: https://docs.triggermesh.io/

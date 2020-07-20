@@ -11,8 +11,6 @@ spec:
       kind: Broker
       metadata:
         name: default
-    options:
-      enableResync: false
   - object:
       apiVersion: sources.knative.dev/v1alpha2
       kind: PingSource
@@ -26,8 +24,6 @@ spec:
             apiVersion: eventing.knative.dev/v1alpha1
             kind: Broker
             name: default
-    options:
-      enableResync: false
   - object:
       apiVersion: eventing.knative.dev/v1beta1
       kind: Trigger
@@ -53,5 +49,3 @@ spec:
           secretKeyRef:
             key: token
             name: ""
-    options:
-      enableResync: false

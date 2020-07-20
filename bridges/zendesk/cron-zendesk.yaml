@@ -1,0 +1,51 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/description: ""
+  name: zendesk-flow
+spec:
+  components:
+  - object:
+      apiVersion: eventing.knative.dev/v1alpha1
+      kind: Broker
+      metadata:
+        name: default
+  - object:
+      apiVersion: sources.knative.dev/v1alpha2
+      kind: PingSource
+      metadata:
+        name: foobar
+      spec:
+        jsonData: '{"foo": "bar"}'
+        schedule: '*/1 * * * *'
+        sink:
+          ref:
+            apiVersion: eventing.knative.dev/v1alpha1
+            kind: Broker
+            name: default
+  - object:
+      apiVersion: eventing.knative.dev/v1beta1
+      kind: Trigger
+      metadata:
+        name: zendesk
+      spec:
+        broker: default
+        subscriber:
+          ref:
+            apiVersion: targets.triggermesh.io/v1alpha1
+            kind: ZendeskTarget
+            name: foobarzendesk
+  - object:
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: ZendeskTarget
+      metadata:
+        name: foobarzendesk
+      spec:
+        email: ""
+        subdomain: ""
+        subject: ""
+        token:
+          secretKeyRef:
+            key: token
+            name: ""

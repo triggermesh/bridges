@@ -9,17 +9,12 @@ metadata:
 spec:
   components:
 
-    # Event brokers
+    # Event broker
     - object:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: &rawbroker raw-events
-    - object:
-        apiVersion: eventing.knative.dev/v1beta1
-        kind: Broker
-        metadata:
-          name: &transformbroker transformed-events
+          name: &brokername events
 
     # Event source
     - object:
@@ -43,29 +38,24 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: *rawbroker
+              name: *brokername
 
     # Transformation service
     - object:
-        apiVersion: messaging.knative.dev/v1beta1
-        kind: Subscription
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
         metadata:
           name: &transformname transform-sentiment-tag
         spec:
-          channel:
-            apiVersion: messaging.knative.dev/v1beta1
-            kind: InMemoryChannel
-            name: raw-events-kne-trigger
+          broker: *brokername
+          filter:
+            attributes:
+              type: com.zendesk.ticket.created
           subscriber:
             ref:
               apiVersion: serving.knative.dev/v1
               kind: Service
               name: *transformname
-          reply:
-            ref:
-              apiVersion: eventing.knative.dev/v1beta1
-              kind: Broker
-              name: *transformbroker
     - object:
         apiVersion: serving.knative.dev/v1
         kind: Service
@@ -101,7 +91,10 @@ spec:
         metadata:
           name: &targetname zendesk
         spec:
-          broker: *transformbroker
+          broker: *brokername
+          filter:
+            attributes:
+              type: com.zendesk.tag.create
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

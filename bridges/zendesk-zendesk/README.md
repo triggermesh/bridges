@@ -42,9 +42,8 @@ The AWS Comprehend transformation component requires the following parameters:
 The event bridge reads several secrets, such as the credentials mentioned above, from the following Kubernetes Secret
 objects:
 
-* `zendesksource`: credentials for the Zendesk source
+* `zendesk-api`: credentials for the Zendesk source and target
 * `awscomprehend`: credentials for the Transformation service (AWS Comprehend sentiment analysis)
-* `zendesktarget`: credentials for the Zendesk target
 
 Those Secrets need to exist in the TriggerMesh user's namespace for the bridge components to start. Please refer to the
 [secrets.yaml](./secrets.yaml) file for an example of Secret objects and their expected attributes.

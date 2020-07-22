@@ -18,8 +18,10 @@ package main
 
 // Request is the structure of the event we expect to receive.
 type Request struct {
-	ID          int64  `json:"id"`
-	Description string `json:"description"`
+	Ticket struct {
+		ID          int64  `json:"id"`
+		Description string `json:"description"`
+	} `json:"ticket"`
 }
 
 // Response is the structure of the event we send in response to requests.

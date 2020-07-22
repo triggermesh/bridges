@@ -62,7 +62,7 @@ func (recv *Receiver) handleEvent(ctx context.Context, e cloudevents.Event) (*cl
 
 	log.Printf("Processing event from source %q", e.Source())
 
-	sentiment, err := recv.analyzeSentiment(ctx, req.Description)
+	sentiment, err := recv.analyzeSentiment(ctx, req.Ticket.Description)
 	if err != nil {
 		log.Printf("Failed to analyze ticket sentiment: %s", err)
 		return nil, cloudevents.NewHTTPResult(http.StatusInternalServerError,
@@ -72,7 +72,7 @@ func (recv *Receiver) handleEvent(ctx context.Context, e cloudevents.Event) (*cl
 	log.Print("Comprehend responded with sentiment: ", *sentiment)
 
 	resp := &Response{
-		ID:  req.ID,
+		ID:  req.Ticket.ID,
 		Tag: *sentiment.Sentiment,
 	}
 

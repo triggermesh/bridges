@@ -39,7 +39,7 @@ $ curl -D- https://transform-sentiment-tag.example.com \
     -H "Ce-Type: com.zendesk.ticket.created" \
     -H "Ce-Source: curl" \
     -H "Ce-Id: 536808d3-88be-4077-9d7a-a3f162705f79" \
-    -d '{"id": 86, "description": "I love you"}'
+    -d '{"ticket": {"id": 86, "description": "I love you"}}'
 ```
 
 This request yields the following response:

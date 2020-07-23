@@ -76,7 +76,6 @@ spec:
                 envFrom:
                   - secretRef:
                     name: awscomprehend
-                    optional: false 
 
     # Event target 
     - object:

@@ -1,0 +1,82 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: google-storage-eventbridge
+  name: google-storage-eventbridge
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Broker
+        metadata:
+          name: google-eb
+     
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: SinkBinding
+        metadata:
+          name: bind-google-storage
+        spec:
+          subject:
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            name: googlecloudstorage
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1alpha1
+              kind: Broker
+              name: google-eb
+
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: googlecloudstorage
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              volumes:
+              - name: google-cloud-key
+                secret:
+                  secretName: pubsub
+              containers:
+              - name: subscriber
+                image: gcr.io/triggermesh/googlecloudstorage
+                volumeMounts:
+                - name: google-cloud-key
+                  mountPath: /var/secrets/google
+                env:
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  value: /var/secrets/google/key.json
+                - name: GOOGLE_CLOUD_PROJECT
+                  value: triggermesh
+                - name: MY_SUBSCRIPTION_NAME
+                  value: bridgedemosub
+
+    - object:
+        apiVersion: eventing.knative.dev/v1alpha1
+        kind: Trigger
+        metadata:
+          name: google-eb-trigger
+        spec:
+          broker: google-eb
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: AWSEventBridgeTarget
+              name: google-eb
+
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: AWSEventBridgeTarget
+        metadata:
+          name: google-eb
+        spec:
+          accountID: ""
+          region: us-east-1
+

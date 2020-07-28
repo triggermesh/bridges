@@ -12,6 +12,6 @@ In order to get notifications, see [Google Storage](https://github.com/triggerme
 kubectl apply -f google-eventbridge.yaml
 ``` 
 
-## Configure AWS EventBridge to Act on events
+## Configure AWS EventBridge to act on events
 
 See [https://docs.triggermesh.io/targets/awseventbridge/](https://docs.triggermesh.io/targets/awseventbridge/)

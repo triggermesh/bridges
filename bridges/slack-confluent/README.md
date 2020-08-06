@@ -11,7 +11,7 @@ This bridge uses
 - A Confluent Target instance.
 - A trigger that connects the broker with the target.
 
-## Parametrization
+## Parameterization
 
 Customization of Confluent's instance is required. Optionally the Slack source can also be customized to verify received messages signature.
 

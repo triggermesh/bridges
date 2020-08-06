@@ -11,7 +11,7 @@ This bridge uses
 - A trigger that connects the broker with the target
 - A Confluent target
 
-## Parametrization
+## Parameterization
 
 Customization of URL and secret creation for Confluent is required.
 

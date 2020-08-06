@@ -11,7 +11,7 @@ This bridge uses
 - A trigger that connects the broker with the target
 - An Elasticsearch target
 
-## Parametrization
+## Parameterization
 
 Customization of URL parameter and secret for Elasticsearch authentication are required.  Optionally the Slack source can also be customized to verify received messages signature.
 

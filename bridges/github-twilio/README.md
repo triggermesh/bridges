@@ -14,7 +14,7 @@ This bridge uses
 - A trigger that connects the Twilio broker with the target
 - A Twilio target
 
-## Parametrization
+## Parameterization
 
 Customization of GitHub secrets and owner/repo, and Twilio secrets and default numbers are required.
 

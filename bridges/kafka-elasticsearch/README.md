@@ -11,7 +11,7 @@ This bridge uses
 - A trigger that connects the broker with the target
 - An Elasticsearch target
 
-## Parametrization
+## Parameterization
 
 Customization of URL parameter and secret for Elasticsearch authentication are required. Kafka source is a community component that  will also need to be configured.
 

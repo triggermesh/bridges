@@ -14,7 +14,7 @@ This bridge uses
 - A trigger that connects the SendGrid broker with the target
 - A Sendgrid target
 
-## Parametrization
+## Parameterization
 
 Customization of SQS and secret creation for SendGrid token is required.
 

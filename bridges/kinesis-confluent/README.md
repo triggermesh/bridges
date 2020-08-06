@@ -11,7 +11,7 @@ This bridge uses
 - A Confluent Target instance.
 - A trigger that connects the broker with the target.
 
-## Parametrization
+## Parameterization
 
 Customization of Confluent's instance is required to provide credentials, servers, topics and connection options. Kinesis source is also customizable to provide ARN and credentials
 

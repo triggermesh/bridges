@@ -11,6 +11,6 @@ This bridge uses
 - A trigger that connects the broker with the service
 - An event display service
 
-## Parametrization
+## Parameterization
 
 Kafka source is a community component, refer to [Kafka repo](https://github.com/knative/eventing-contrib/tree/master/kafka/source) for configuration.

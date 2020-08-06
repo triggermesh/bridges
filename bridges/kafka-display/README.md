@@ -1,6 +1,6 @@
 # Kafka to event-display service
 
-This sample logs messages sent throught Kafka into an `event-display` service.
+This sample Bridge logs messages sent throught Kafka into an `event-display` service.
 
 ## Components
 

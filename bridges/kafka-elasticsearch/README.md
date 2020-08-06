@@ -1,6 +1,6 @@
 # Kafka to Elasticsearch
 
-This sample bridge indexes messages sent throught Kafka into an Elasticsearch cluster.
+This sample Bridge indexes messages sent through Kafka into an Elasticsearch cluster.
 
 ## Components
 

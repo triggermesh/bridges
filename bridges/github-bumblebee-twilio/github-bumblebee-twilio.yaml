@@ -1,0 +1,120 @@
+# This is an EXAMPLE Bridge. Before deploying it, replace all of the placeholder values with valid data. 
+
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+    name: github-twilio-bumblebee
+    annotations:
+     bridges.triggermesh.io/name: github-twilio-bumblebee
+spec:
+  components:
+    # Event Brokers
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: event-broker
+    # Event source
+    - object:
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitHubSource
+        metadata:
+          name: github-source
+        spec:
+          eventTypes:
+            - push
+            - commit_comment
+          ownerAndRepository: JeffNeff/tstrpo
+          accessToken:
+            secretKeyRef:
+              key: accessToken
+              name: githubsecret
+          secretToken:
+            secretKeyRef:
+              key: secretToken
+              name: githubsecret
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: event-broker
+    # Transformation Service
+    - object:
+        apiVersion: flow.triggermesh.io/v1alpha1
+        kind: Transformation
+        metadata:
+          name: transform-0
+        spec:
+          context:
+          - name: add
+            paths:
+            - key: type 
+              value: ce.after.transformation   
+          data:
+          - name: store
+            paths: 
+            - key: $repository
+              value: repository.name 
+            - key: $message
+              value: head_commit.message
+            - key: $author
+              value: head_commit.author.username
+          - name: delete
+            paths:
+            - key:
+          - name: add
+            paths:
+            # We can optionally inject the phone number here
+            # - key: to
+            #   value: ''
+            - key: message
+              value: '$author : has made changes at $repository.'
+   # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: transform-trigger
+        spec:
+          broker: event-broker
+          filter:
+            attributes:
+              type: dev.knative.source.github.push
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: transform-0
+    # Event Target Trigger
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: twilio-trigger
+        spec:
+          broker: event-broker
+          filter:
+            attributes:
+              type: ce.after.transformation
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: TwilioTarget
+              name: twilio
+    # Event Target
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: TwilioTarget
+        metadata:
+          name: twilio
+        spec:
+          defaultPhoneFrom: ""
+          defaultPhoneTo: ""
+          sid:
+            secretKeyRef:
+              name: twiliosecret
+              key: sid
+          token:
+            secretKeyRef:
+              name: twiliosecret
+              key: token

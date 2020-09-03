@@ -1,0 +1,79 @@
+# Copyright (c) 2020 TriggerMesh Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: gitlastic
+  name: gitlastic
+spec:
+  components:
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Broker
+        metadata:
+          name: gitlab-broker
+    - object: 
+        apiVersion: sources.knative.dev/v1alpha1
+        kind: GitLabSource
+        metadata:
+          name: gitlab-source
+        spec:
+          eventTypes:
+          - push_events
+          - issues_events
+          projectUrl: https://gitlab.com/YOUR/PROJECT
+          accessToken:
+            secretKeyRef:
+              name: gitlabsecret
+              key: accessToken
+          secretToken:
+            secretKeyRef:
+              name: gitlabsecret
+              key: secretToken
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1beta1
+              kind: Broker
+              name: gitlab-broker
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: ElasticsearchTarget
+        metadata:
+          name: tm-elastic
+        spec:
+          connection:
+            addresses:
+              - https://11cb2bc5037446a481fe61efed8cb80b.us-central1.gcp.cloud.es.io:9243
+            skipVerify: true
+            username: elastic
+            password:
+              secretKeyRef:
+                key: password
+                name: elastic
+          indexName: elastic-mesh
+
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: elastic-trigger
+        spec:
+          broker: gitlab-broker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: ElasticsearchTarget
+              name: tm-elastic

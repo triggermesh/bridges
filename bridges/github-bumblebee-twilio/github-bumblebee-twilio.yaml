@@ -24,7 +24,7 @@ spec:
   components:
     # Event Brokers
     - object:
-        apiVersion: eventing.knative.dev/v1beta1
+        apiVersion: eventing.knative.dev/v1
         kind: Broker
         metadata:
           name: event-broker
@@ -49,7 +49,7 @@ spec:
               name: githubsecret
           sink:
             ref:
-              apiVersion: eventing.knative.dev/v1beta1
+              apiVersion: eventing.knative.dev/v1
               kind: Broker
               name: event-broker
     # Transformation Service
@@ -57,15 +57,15 @@ spec:
         apiVersion: flow.triggermesh.io/v1alpha1
         kind: Transformation
         metadata:
-          name: transform-0
+          name: transform-01
         spec:
           context:
-          - name: add
+          - operation: add
             paths:
             - key: type 
               value: ce.after.transformation   
           data:
-          - name: store
+          - operation: store
             paths: 
             - key: $repository
               value: repository.name 
@@ -73,19 +73,19 @@ spec:
               value: head_commit.message
             - key: $author
               value: head_commit.author.username
-          - name: delete
+          - operation: delete
             paths:
             - key:
-          - name: add
+          - operation: add
             paths:
             # We can optionally inject the phone number here
             # - key: to
-            #   value: ''
+            #   value: '+19196000253'
             - key: message
               value: '$author : has made changes at $repository.'
    # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
     - object:
-        apiVersion: eventing.knative.dev/v1beta1
+        apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
           name: transform-trigger
@@ -101,7 +101,7 @@ spec:
               name: transform-0
     # Event Target Trigger
     - object:
-        apiVersion: eventing.knative.dev/v1beta1
+        apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
           name: twilio-trigger
@@ -122,8 +122,9 @@ spec:
         metadata:
           name: twilio
         spec:
-          defaultPhoneFrom: ""
-          defaultPhoneTo: ""
+          defaultPhoneFrom: "+15098509745"
+          # Or set a default phone in the spec of the Twilio Target
+          # defaultPhoneTo: "+19196000253"
           sid:
             secretKeyRef:
               name: twiliosecret

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # This is an EXAMPLE Bridge. Before deploying it, replace all of the placeholder values with valid data. 
-
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
@@ -57,13 +56,13 @@ spec:
         apiVersion: flow.triggermesh.io/v1alpha1
         kind: Transformation
         metadata:
-          name: transform-01
+          name: transform-0
         spec:
           context:
           - operation: add
             paths:
             - key: type 
-              value: ce.after.transformation   
+              value: ce.after.transformation
           data:
           - operation: store
             paths: 
@@ -79,8 +78,8 @@ spec:
           - operation: add
             paths:
             # We can optionally inject the phone number here
-            # - key: to
-            #   value: '+19196000253'
+            - key: to
+              value: '+19196123253'
             - key: message
               value: '$author : has made changes at $repository.'
    # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
@@ -96,9 +95,27 @@ spec:
               type: dev.knative.source.github.push
           subscriber:
             ref:
-              apiVersion: serving.knative.dev/v1
-              kind: Service
+              apiVersion: flow.triggermesh.io/v1alpha1
+              kind: Transformation
               name: transform-0
+    # Event Target
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: TwilioTarget
+        metadata:
+          name: twilio
+        spec:
+          defaultPhoneFrom: "+12098309745"
+          # Or set a default phone in the spec of the Twilio Target
+          # defaultPhoneTo: "+19196123253"
+          sid:
+            secretKeyRef:
+              name: twiliosecret
+              key: sid
+          token:
+            secretKeyRef:
+              name: twiliosecret
+              key: token
     # Event Target Trigger
     - object:
         apiVersion: eventing.knative.dev/v1
@@ -115,21 +132,3 @@ spec:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: TwilioTarget
               name: twilio
-    # Event Target
-    - object:
-        apiVersion: targets.triggermesh.io/v1alpha1
-        kind: TwilioTarget
-        metadata:
-          name: twilio
-        spec:
-          defaultPhoneFrom: "+15098509745"
-          # Or set a default phone in the spec of the Twilio Target
-          # defaultPhoneTo: "+19196000253"
-          sid:
-            secretKeyRef:
-              name: twiliosecret
-              key: sid
-          token:
-            secretKeyRef:
-              name: twiliosecret
-              key: token

@@ -45,8 +45,7 @@ spec:
         metadata:
           name: gstarget
         spec:
-        #Below is an example Spreadsheet ID. Change this 
-          id: 1Yp2lx3_q4uXwPwi1stVLsPk6a12Vjh-sE_TsDl68
+          id: <GOOGLE_SHEET_ID>
         #Static prefix assignment for reciving CloudEvents without prior transformation
           defaultPrefix: slackSheet
         #These values should not change

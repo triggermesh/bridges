@@ -37,7 +37,7 @@ spec:
           eventTypes:
             - push
             - commit_comment
-          ownerAndRepository: JeffNeff/tstrpo
+          ownerAndRepository: "<your GitHub org>/<your GitHub repo>"
           accessToken:
             secretKeyRef:
               key: accessToken
@@ -79,7 +79,7 @@ spec:
             paths:
             # We can optionally inject the phone number here
             - key: to
-              value: '+19196123253'
+              value: <RECIPIENT_PHONE_NUMBER>
             - key: message
               value: '$author : has made changes at $repository.'
    # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
@@ -105,9 +105,9 @@ spec:
         metadata:
           name: twilio
         spec:
-          defaultPhoneFrom: "+12098309745"
+          defaultPhoneFrom: <SENDING_PHONE_NUMBER>
           # Or set a default phone in the spec of the Twilio Target
-          # defaultPhoneTo: "+19196123253"
+          # defaultPhoneTo: <RECIPIENT_PHONE_NUMBER>
           sid:
             secretKeyRef:
               name: twiliosecret

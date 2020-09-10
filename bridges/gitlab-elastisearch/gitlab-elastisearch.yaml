@@ -21,7 +21,7 @@ metadata:
 spec:
   components:
     - object:
-        apiVersion: eventing.knative.dev/v1beta1
+        apiVersion: eventing.knative.dev/v1
         kind: Broker
         metadata:
           name: gitlab-broker
@@ -34,18 +34,18 @@ spec:
           eventTypes:
           - push_events
           - issues_events
-          projectUrl: https://gitlab.com/YOUR/PROJECT
+          projectUrl: https://gitlab.com/<USERNAME>/<REPO_NAME>
           accessToken:
             secretKeyRef:
-              name: gitlabsecret
+              name: gitlabcreds
               key: accessToken
           secretToken:
             secretKeyRef:
-              name: gitlabsecret
+              name: gitlabcreds
               key: secretToken
           sink:
             ref:
-              apiVersion: eventing.knative.dev/v1beta1
+              apiVersion: eventing.knative.dev/v1
               kind: Broker
               name: gitlab-broker
     - object:
@@ -56,17 +56,20 @@ spec:
         spec:
           connection:
             addresses:
-              - https://11cb2bc5037446a481fe61efed8cb80b.us-central1.gcp.cloud.es.io:9243
+              - https://elasticsearch-host:9200
             skipVerify: true
             username: elastic
+            apiKey:
+              secretKeyRef:
+                name: elastic-creds
+                key: apiKey
             password:
               secretKeyRef:
-                key: password
-                name: elastic
-          indexName: elastic-mesh
-
+                name: elastic-creds
+                key: password      
+          indexName: <ELASTIC_INDEX>
     - object:
-        apiVersion: eventing.knative.dev/v1beta1
+        apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
           name: elastic-trigger

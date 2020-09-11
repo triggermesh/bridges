@@ -59,10 +59,6 @@ spec:
               - https://elasticsearch-host:9200
             skipVerify: true
             username: elastic
-            apiKey:
-              secretKeyRef:
-                name: elastic-creds
-                key: apiKey
             password:
               secretKeyRef:
                 name: elastic-creds

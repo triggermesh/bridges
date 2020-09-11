@@ -1,0 +1,38 @@
+# Copyright (c) 2020 TriggerMesh Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This can be deployed as a development tool to view all of the events that are passed into the broker
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: event-display
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
+                name: user-container
+---
+
+      apiVersion: eventing.knative.dev/v1beta1
+      kind: Trigger
+      metadata:
+        name: ed-trigger
+      spec:
+        broker: transformation-demo1
+        subscriber:
+          ref:
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            name: event-display

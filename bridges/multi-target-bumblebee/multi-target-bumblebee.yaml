@@ -22,26 +22,27 @@ spec:
   components:
     # Event Broker
     - object:
+        # apiVersion: eventing.knative.dev/v1
+        # kind: Broker
+        # metadata:
+        #   name: &broker transformation-broker
         apiVersion: eventing.knative.dev/v1
         kind: Broker
         metadata:
           annotations:
             eventing.knative.dev/broker.class: MTChannelBasedBroker
-          name: transformation-demo
-        spec:
-          config:
-            apiVersion: v1
-            kind: ConfigMap
-            name: config-br-default-channel
-            namespace: knative-eventing
-
+          name: &broker transformation-demo1
     # Github Event Source
     - object:
         apiVersion: sources.knative.dev/v1alpha1
         kind: GitHubSource
         metadata:
-          name: githubsource-transformation-demo
+          name: githubsource
         spec:
+          eventTypes:
+            - push
+            - commit_comment
+          ownerAndRepository: ''
           accessToken:
             secretKeyRef:
               key: accessToken
@@ -50,25 +51,77 @@ spec:
             secretKeyRef:
               key: secretToken
               name: githubsecret
-          eventTypes:
-          - push
-          - issues
-          ownerAndRepository: tzununbekov/foo
           sink:
             ref:
               apiVersion: eventing.knative.dev/v1
               kind: Broker
-              name: transformation-demo
+              name: *broker
+
+    # Github Event Transformation
+    - object: 
+        apiVersion: flow.triggermesh.io/v1alpha1
+        kind: Transformation
+        metadata:
+          name: github-transformation
+        spec:
+          context:
+          - operation: store
+            paths:
+            - key: $ceType
+              value: type
+          - operation: add
+            paths:
+            - key: type
+              value: io.triggermesh.transformation.github
+          data:
+          - operation: store
+            paths: 
+            - key: $repository
+              value: repository.name 
+            - key: $message
+              value: head_commit.message
+            - key: $author
+              value: head_commit.author.username
+          - operation: delete
+            paths:
+            - key: 
+          - operation: add
+            paths:
+            - key: type
+              value: $ceType
+            - key: object
+              value: $author 
+            - key: subject
+              value: $repository
+            - key: verb
+              value: $message
+
+    # Github Event Transformation Trigger
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Trigger
+        metadata:
+          name: github-transformation-trigger
+        spec:
+          broker: *broker
+          filter:
+            attributes:
+              type: dev.knative.source.github.push
+          subscriber:
+            ref:
+              apiVersion: flow.triggermesh.io/v1alpha1
+              kind: Transformation
+              name: github-transformation
 
     # Google Sheet Event Target
     - object: 
         apiVersion: targets.triggermesh.io/v1alpha1
         kind: GoogleSheetTarget
         metadata:
-          name: transformation-googlesheet-demo
+          name: googlesheet-target
         spec:
-          id: 1nmznXLnrziNbAnKTayH4y-uxOsTC3gxUNqRgIfXP_X4
-          defaultPrefix: transformation-demo
+          id: ''
+          defaultPrefix: github-notifications
           googleServiceAccount:
             secretKeyRef:
               name: googlesheet
@@ -79,9 +132,9 @@ spec:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
-          name: googlesheet-target-trigger
+          name: googlesheet-trigger
         spec:
-          broker: transformation-demo
+          broker: *broker
           filter: 
             attributes:
               type: io.triggermesh.transformation.googlesheet
@@ -89,9 +142,9 @@ spec:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: GoogleSheetTarget
-              name: transformation-googlesheet-demo
+              name: googlesheet-target
         
-    # Google Sheet Transformation
+    # Google Sheet Event Transformation
     - object: 
         apiVersion: flow.triggermesh.io/v1alpha1
         kind: Transformation
@@ -99,13 +152,12 @@ spec:
           name: googlesheet-transformation
         spec:
           context:
-          - name: add
+          - operation: add
             paths:
             - key: type
               value: io.triggermesh.transformation.googlesheet
-        
           data:
-          - name: store
+          - operation: store
             paths:
             - key: $type
               value: type
@@ -115,24 +167,22 @@ spec:
               value: subject
             - key: $verb
               value: verb
-        
-          - name: delete
+          - operation: delete
             paths:
             - key:
-        
-          - name: add
+          - operation: add
             paths:
             - key: message
               value: 'type: $type, user: $object, repository: $subject, action: $verb'
 
-    # Transformation Trigger
+    # Google Sheet Event Transformation Trigger
     - object:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
           name: googlesheet-transformation-trigger
         spec:
-          broker: transformation-demo
+          broker: *broker
           filter:
             attributes:
               type: io.triggermesh.transformation.github
@@ -147,7 +197,7 @@ spec:
         apiVersion: targets.triggermesh.io/v1alpha1
         kind: SlackTarget
         metadata:
-          name: transformation-slack-demo
+          name: slack-target
         spec:
           token:
             secretKeyRef:
@@ -161,7 +211,7 @@ spec:
         metadata:
           name: slack-target-trigger
         spec:
-          broker: transformation-demo
+          broker: *broker
           filter: 
             attributes:
               type: com.slack.webapi.chat.postMessage
@@ -169,9 +219,9 @@ spec:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: SlackTarget
-              name: transformation-slack-demo
+              name: slack-target
 
-    # Slack Transformation 
+    # Slack Event Transformation 
     - object:
         apiVersion: flow.triggermesh.io/v1alpha1
         kind: Transformation
@@ -179,13 +229,12 @@ spec:
           name: slack-transformation
         spec:
           context:
-          - name: add
+          - operation: add
             paths:
             - key: type
               value: com.slack.webapi.chat.postMessage
-        
           data:
-          - name: store
+          - operation: store
             paths:
             - key: $object
               value: object 
@@ -193,26 +242,24 @@ spec:
               value: subject
             - key: $verb
               value: verb
-        
-          - name: delete
+          - operation: delete
             paths:
             - key:
-        
-          - name: add
+          - operation: add
             paths:
             - key: channel
               value: github-demo-channel
             - key: text
               value: '$object at $subject: $verb'
               
-    # Slack Transformation Trigger
+    # Slack Event Transformation Trigger
     - object:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
           name: slack-transformation-trigger
         spec:
-          broker: transformation-demo
+          broker: *broker
           filter:
             attributes:
               type: io.triggermesh.transformation.github

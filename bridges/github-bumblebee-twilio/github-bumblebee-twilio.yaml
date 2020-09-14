@@ -62,7 +62,7 @@ spec:
           - operation: add
             paths:
             - key: type 
-              value: ce.after.transformation
+              value: io.triggermesh.transformation.twilio
           data:
           - operation: store
             paths: 
@@ -126,7 +126,7 @@ spec:
           broker: event-broker
           filter:
             attributes:
-              type: ce.after.transformation
+              type: io.triggermesh.transformation.twilio
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

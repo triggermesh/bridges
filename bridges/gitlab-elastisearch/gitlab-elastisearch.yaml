@@ -56,7 +56,7 @@ spec:
         spec:
           connection:
             addresses:
-              - https://elasticsearch-host:9200
+              - <ELASTICSEARCH_ENDPOINT_URL>
             skipVerify: true
             username: elastic
             password:

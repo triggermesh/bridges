@@ -34,7 +34,7 @@ spec:
           eventTypes:
           - push_events
           - issues_events
-          projectUrl: https://gitlab.com/<USERNAME>/<REPO_NAME>
+          projectUrl: https://gitlab.com/<USERNAME>/<REPO_NAME>    # TODO: CHANGE THIS
           accessToken:
             secretKeyRef:
               name: gitlabcreds
@@ -56,14 +56,14 @@ spec:
         spec:
           connection:
             addresses:
-              - <ELASTICSEARCH_ENDPOINT_URL>
+              - <ELASTICSEARCH_ENDPOINT_URL>     # TODO: CHANGE THIS
             skipVerify: true
             username: elastic
             password:
               secretKeyRef:
                 name: elastic-creds
                 key: password      
-          indexName: <ELASTIC_INDEX>
+          indexName: <ELASTIC_INDEX>     # TODO: CHANGE THIS
     - object:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger

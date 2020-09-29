@@ -62,7 +62,7 @@ spec:
           - operation: add
             paths:
             - key: type 
-              value: io.triggermesh.transformation.twilio
+              value: io.triggermesh.twilio.sms.send
           data:
           - operation: store
             paths: 
@@ -126,7 +126,7 @@ spec:
           broker: event-broker
           filter:
             attributes:
-              type: io.triggermesh.transformation.twilio
+              type: io.triggermesh.twilio.sms.send
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

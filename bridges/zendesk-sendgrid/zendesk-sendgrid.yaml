@@ -1,0 +1,117 @@
+# This is an EXAMPLE Bridge. Before deploying it, replace all of the placeholder values with valid data. 
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: &bridgename zendesk-sendgrid
+  annotations:
+    bridges.triggermesh.io/name: *bridgename
+spec:
+  components:
+
+    # Event broker
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Broker
+        metadata:
+          name: &brokername events
+
+    # Event source
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: ZendeskSource
+        metadata:
+          name: zendesk
+        spec:
+          email: '<ZENDESK ACCOUNT USER EMAIL>'
+          subdomain: '<ZENDESK TENANT SUBDOMAIN>'
+          token:
+            secretKeyRef:
+              name: zendesk-api
+              key: token
+          webhookUsername: pogChamp
+          webhookPassword:
+            secretKeyRef:
+              name: zendesk-api
+              key: webhookPassword
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1
+              kind: Broker
+              name: *brokername
+   # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Trigger
+        metadata:
+          name: transform-trigger
+        spec:
+          broker: event-broker
+          filter:
+            attributes:
+              type: com.zendesk.ticket.created
+          subscriber:
+            ref:
+              apiVersion: flow.triggermesh.io/v1alpha1
+              kind: Transformation
+              name: transform-0
+    # Transformation Service
+    - object:
+        apiVersion: flow.triggermesh.io/v1alpha1
+        kind: Transformation
+        metadata:
+          name: transform-0
+        spec:
+          context:
+          - operation: add
+            paths:
+            - key: type 
+              value: io.triggermesh.sendgrid.send
+          data:
+          - operation: store
+            paths: 
+            - key: $repository
+              value: ticket.name 
+            # - key: $message
+              # value: head_commit.message
+            - key: $author
+              value: current_user.email
+          - operation: delete
+            paths:
+            - key:
+          - operation: add
+            paths:
+            - key: message
+              value: '$author has created a new Zendesk Ticket: $repository.'
+    # Event Trigger
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Trigger
+        metadata:
+          name: tmsg
+        spec:
+          broker: brokername
+          filter:
+            attributes:
+              type: io.triggermesh.sendgrid.send
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SendGridTarget
+              name: tmsg
+    # Event Target
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SendGridTarget
+        metadata:
+          name: tmsg
+        spec:
+          defaultFromName: "Everybridge"
+          defaultToName: "sebgoa"
+          defaultToEmail: "foo@bar.com"
+          defaultFromEmail: "everybridge@triggermesh.io"
+          defaultSubject: New Zendesk Ticket 
+          apiKey:
+            secretKeyRef:
+              name: sendgrid
+              key: apiKey
+

@@ -2,9 +2,9 @@
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
-  name: &bridgename zendesk-sendgrid
+  name: zendesk-sendgrid
   annotations:
-    bridges.triggermesh.io/name: *bridgename
+    bridges.triggermesh.io/name: zendesk-sendgrid
 spec:
   components:
 
@@ -13,7 +13,7 @@ spec:
         apiVersion: eventing.knative.dev/v1
         kind: Broker
         metadata:
-          name: &brokername events
+          name: events
 
     # Event source
     - object:
@@ -22,8 +22,8 @@ spec:
         metadata:
           name: zendesk
         spec:
-          email: '<ZENDESK ACCOUNT USER EMAIL>'
-          subdomain: '<ZENDESK TENANT SUBDOMAIN>'
+          email: dev@triggermesh.com
+          subdomain: triggermesh
           token:
             secretKeyRef:
               name: zendesk-api
@@ -37,7 +37,7 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1
               kind: Broker
-              name: *brokername
+              name: events
    # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
     - object:
         apiVersion: eventing.knative.dev/v1
@@ -45,7 +45,7 @@ spec:
         metadata:
           name: transform-trigger
         spec:
-          broker: event-broker
+          broker: events
           filter:
             attributes:
               type: com.zendesk.ticket.created
@@ -69,10 +69,8 @@ spec:
           data:
           - operation: store
             paths: 
-            - key: $repository
-              value: ticket.name 
-            # - key: $message
-              # value: head_commit.message
+            - key: $url
+              value: ticket.url
             - key: $author
               value: current_user.email
           - operation: delete
@@ -81,7 +79,7 @@ spec:
           - operation: add
             paths:
             - key: message
-              value: '$author has created a new Zendesk Ticket: $repository.'
+              value: '$author has created a new Zendesk Ticket: $url'
     # Event Trigger
     - object:
         apiVersion: eventing.knative.dev/v1
@@ -89,7 +87,7 @@ spec:
         metadata:
           name: tmsg
         spec:
-          broker: brokername
+          broker: events
           filter:
             attributes:
               type: io.triggermesh.sendgrid.send
@@ -105,10 +103,10 @@ spec:
         metadata:
           name: tmsg
         spec:
-          defaultFromName: "Everybridge"
-          defaultToName: "sebgoa"
-          defaultToEmail: "foo@bar.com"
-          defaultFromEmail: "everybridge@triggermesh.io"
+          defaultFromName: bar
+          defaultFromEmail: bar@triggermesh.com
+          defaultToName: foo
+          defaultToEmail: foo@gmail.com
           defaultSubject: New Zendesk Ticket 
           apiKey:
             secretKeyRef:

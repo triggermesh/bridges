@@ -38,7 +38,7 @@ spec:
               apiVersion: eventing.knative.dev/v1
               kind: Broker
               name: events
-   # Transformation Trigger : Subscribes the transformation service to recieve events from the 'event-broker'
+   # Transformation Trigger
     - object:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger

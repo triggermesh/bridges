@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 from flask import Flask
 from flask import request
@@ -12,16 +12,12 @@ def sink():
     headers['Ce-Specversion']='1.0'
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
-    headers['Content-Type']='application/json'
     headers['Ce-Source']='translators.triggermesh.io/partsunlimited-demo-translator'
-    headers['Ce-Type']='com.triggermesh.targets.sink'
-    body = {}
+    headers['Ce-Type']='io.triggermesh.targets.sink'
 
     return app.response_class(
-            response=json.dumps(body),
             headers=headers,
             status=204,
-            mimetype='application/json'
     )
 
 
@@ -40,7 +36,6 @@ def trans():
     headers['Ce-Specversion']='1.0'
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
-    headers['Content-Type']='application/json'
     headers['Ce-Source']='translators.triggermesh.io/partsunlimited-demo-translator'
 
     # For events we don't care about, just return
@@ -48,9 +43,9 @@ def trans():
         print("invalid source: " + ceSource)
         return sink()
 
-    # Handle the replenishment events by posting a message to slack
+    # Handle the replenishment event by posting a message to Slack
     if ceSource == "tmtestdb.demo.triggermesh.com/replenish":
-        headers['Ce-Type']='com.triggermesh.targets.slack'
+        headers['Ce-Type']='com.slack.webapi.chat.postMessage'
         # Need to extract the manufacturer details
         resp = conn.request_get("/product/" + str(ce["new"]["ID"]))
         respBody = json.loads(resp[u'body'])
@@ -70,7 +65,7 @@ def trans():
             print("invalid replenish")
             return sink()
 
-    # Handle the new order event by sending it to an oracle cloud function
+    # Handle the new order event by posting a message to Slack
     if ceSource == "tmtestdb.demo.triggermesh.com/neworder":
         headers['Ce-Type']='com.slack.webapi.chat.postMessage'
         # Need to extract the order details

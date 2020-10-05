@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 from flask import Flask
 from flask import request
@@ -12,16 +12,12 @@ def sink():
     headers['Ce-Specversion']='1.0'
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
-    headers['Content-Type']='application/json'
     headers['Ce-Source']='translators.triggermesh.io/partsunlimited-demo-translator'
-    headers['Ce-Type']='com.triggermesh.targets.sink'
-    body = {}
+    headers['Ce-Type']='io.triggermesh.targets.sink'
 
     return app.response_class(
-            response=json.dumps(body),
             headers=headers,
             status=204,
-            mimetype='application/json'
     )
 
 
@@ -40,7 +36,6 @@ def trans():
     headers['Ce-Specversion']='1.0'
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
-    headers['Content-Type']='application/json'
     headers['Ce-Source']='translators.triggermesh.io/partsunlimited-demo-translator'
 
     # For events we don't care about, just return
@@ -48,7 +43,7 @@ def trans():
         print("invalid source: " + ceSource)
         return sink()
 
-    # Handle the replenishment events by posting a message to zendesk 
+    # Handle the replenishment event by posting a message to Zendesk
     if ceSource == "tmtestdb.demo.triggermesh.com/replenish":
         headers['Ce-Type']='com.zendesk.ticket.create'
         # Need to extract the manufacturer details
@@ -71,7 +66,7 @@ def trans():
             print("invalid replenish")
             return sink()
 
-    # Handle the new order event by sending it to an oracle cloud function
+    # Handle the new order event by sending it to an Oracle Cloud function
     if ceSource == "tmtestdb.demo.triggermesh.com/neworder":
         headers['Ce-Type']='com.triggermesh.targets.oracle.function.partsunlimited-neworder'
         # Need to extract the order details

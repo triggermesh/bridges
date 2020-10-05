@@ -65,7 +65,7 @@ spec:
           - operation: add
             paths:
             - key: type 
-              value: io.triggermesh.sendgrid.send
+              value: io.triggermesh.sendgrid.email.send
           data:
           - operation: store
             paths: 
@@ -90,7 +90,7 @@ spec:
           broker: events
           filter:
             attributes:
-              type: io.triggermesh.sendgrid.send
+              type: io.triggermesh.sendgrid.email.send
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1

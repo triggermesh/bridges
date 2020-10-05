@@ -40,7 +40,7 @@ spec:
           template:
             spec:
               containers:
-              - image: grc.io/triggermesh/oracledemotrans-zendesk:latest
+              - image: gcr.io/triggermesh/bridge-examples/oracle-zendesk:latest
 
     - object:
         apiVersion: serving.knative.dev/v1

@@ -40,7 +40,7 @@ spec:
           template:
             spec:
               containers:
-              - image: grc.io/triggermesh/oracledemotrans-slack:latest
+              - image: gcr.io/triggermesh/bridge-examples/oracle-slack:latest
 
     - object:
         apiVersion: serving.knative.dev/v1

@@ -18,22 +18,27 @@ def trans():
     headers['Ce-Specversion']='1.0'
     headers['Ce-Time']=request.headers['Ce-Time']
     headers['Ce-Id']=request.headers['Ce-Id']
-    headers['Ce-Type']='com.triggermesh.targets.datadog'
+    headers['Ce-Type']="io.triggermesh.datadog.metric.aggregated"
     headers['Ce-Source']=request.headers['Ce-Source'] + "/translated"
 
     # Modify the Oracle OCI Monitoring data to be usable for Datadog
     if ce is not None:
-        body = []
+        data = []
         for e in ce:
             displayName = e['name']
             resourceGroup = e['dimensions']['resourceDisplayName']
+            metricType = 'distribution'
             for s in e['aggregatedDatapoints']:
                 datum = {}
                 datum['displayName'] = displayName
                 datum['resourceGroup'] = resourceGroup
                 datum['timeStamp'] = s['timestamp']
                 datum['value'] = s['value']
-                body.append(datum)
+                datum['metricType'] = metricType
+                data.append(datum)
+
+        body = {}
+        body['data'] = data
 
         return app.response_class(
             response=json.dumps(body),

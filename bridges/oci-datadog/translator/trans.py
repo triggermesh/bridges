@@ -26,7 +26,11 @@ def trans():
         data = []
         for e in ce:
             displayName = e['name']
-            resourceGroup = e['dimensions']['resourceDisplayName']
+            if "resourceDisplayName" in e['dimensions']:
+                resourceGroup = e['dimensions']['resourceDisplayName']
+            else:
+                resourceGroup = e['dimensions']['resourceId']
+
             metricType = 'distribution'
             for s in e['aggregatedDatapoints']:
                 datum = {}

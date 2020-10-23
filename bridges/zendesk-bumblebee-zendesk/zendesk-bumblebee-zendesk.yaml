@@ -174,27 +174,3 @@ spec:
           apiVersion: targets.triggermesh.io/v1alpha1
           kind: ZendeskTarget
           name: tag-updater
-- object:
-    apiVersion: serving.knative.dev/v1
-    kind: Service
-    metadata:
-      name: event-display
-    spec:
-      template:
-        spec:
-          containers:
-          - image: gcr.io/triggermesh/event_display-864884f202126ec3150c5fcef437d90c@sha256:5b0491983fa2019ab0fd7b8e5eaafb0bf9df3cf6fd4d1e4f10a34fcc6b59e858
-            name: user-container
-- object:
-    apiVersion: eventing.knative.dev/v1beta1
-    kind: Trigger
-    metadata:
-      name: ed-trigger
-    spec:
-      broker: events
-      subscriber:
-        ref:
-          apiVersion: serving.knative.dev/v1
-          kind: Service
-          name: event-display
-          

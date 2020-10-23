@@ -197,3 +197,4 @@ spec:
           apiVersion: serving.knative.dev/v1
           kind: Service
           name: event-display
+          

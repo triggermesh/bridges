@@ -125,7 +125,6 @@ spec:
           secretKeyRef:
             name: ddapitoken
             key: apiKey
-    # Event Target Trigger
     - object:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger

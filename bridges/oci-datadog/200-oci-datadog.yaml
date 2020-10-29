@@ -77,7 +77,6 @@ spec:
           oracleTenancy: ocid1.tenancy.oc1..aaaaaaaaswr
           oracleUser: ocid1.user.oc1..aaaaaaaaqloc
           oracleRegion: us-ashburn-1
-
           metricsNamespace: oci_computeagent
           metricsQuery: NetworksBytesOut[1m].mean()
           metricsPollingFrequency: 1m

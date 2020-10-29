@@ -24,7 +24,7 @@ spec:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name:  &brokername oci-datadog
+          name: &brokername oci-datadog
     - object:
         apiVersion: sources.triggermesh.io/v1alpha1
         kind: OCIMetricsSource

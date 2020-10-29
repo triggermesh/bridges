@@ -24,7 +24,7 @@ spec:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Broker
         metadata:
-          name: oci-datadog
+          name:  &brokername oci-datadog
     - object:
         apiVersion: sources.triggermesh.io/v1alpha1
         kind: OCIMetricsSource
@@ -55,7 +55,7 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: oci-datadog
+              name: *brokername
     - object:
         apiVersion: sources.triggermesh.io/v1alpha1
         kind: OCIMetricsSource
@@ -86,13 +86,13 @@ spec:
             ref:
               apiVersion: eventing.knative.dev/v1beta1
               kind: Broker
-              name: oci-datadog
+              name: *brokername
     # Transformation Service
     - object:
         apiVersion: serving.knative.dev/v1
         kind: Service
         metadata:
-          name: trans-datadog
+          name: &transformname trans-datadog
           labels:
             serving.knative.dev/visibility: cluster-local
         spec:
@@ -104,9 +104,9 @@ spec:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
-          name: transform-trigger
+          name: *transformname
         spec:
-          broker: oci-datadog
+          broker: *brokername
           filter:
             attributes:
               type: com.oracle.cloud.monitoring
@@ -120,7 +120,7 @@ spec:
         apiVersion: targets.triggermesh.io/v1alpha1
         kind: DatadogTarget
         metadata:
-         name: datadogtarget
+         name: &targetname datadogtarget
         spec:
          metricPrefix: triggermesh # Defines an optional prefix to define for metric names
          apiKey:
@@ -132,9 +132,9 @@ spec:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger
         metadata:
-          name: datadog-trigger
+          name: *targetname
         spec:
-          broker: oci-datadog
+          broker: *brokername
           filter:
             attributes:
               type: io.triggermesh.datadog.metric.aggregated
@@ -142,4 +142,4 @@ spec:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: DatadogTarget
-              name: datadog
+              name: *targetname

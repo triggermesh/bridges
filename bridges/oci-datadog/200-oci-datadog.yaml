@@ -114,7 +114,7 @@ spec:
             ref:
               apiVersion: serving.knative.dev/v1
               kind: Service
-              name: trans-datadog
+              name: *transformname
     # Event Target
     - object:
         apiVersion: targets.triggermesh.io/v1alpha1

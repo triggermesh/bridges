@@ -99,7 +99,7 @@ spec:
           template:
             spec:
               containers:
-              - image: gcr.io/triggermesh/transdatadog:latest
+              - image: gcr.io/triggermesh/bridge-examples/oci-datadog/oci-to-datadog-translator:latest
     - object:
         apiVersion: eventing.knative.dev/v1
         kind: Trigger
@@ -120,9 +120,13 @@ spec:
         apiVersion: targets.triggermesh.io/v1alpha1
         kind: DatadogTarget
         metadata:
-         name: datadog
+         name: datadogtarget
         spec:
-          agentAddress: dogstatsd # This service must be running in the namespace first
+         metricPrefix: triggermesh # Defines an optional prefix to define for metric names
+         apiKey:
+          secretKeyRef:
+            name: ddapitoken
+            key: apiKey
     # Event Target Trigger
     - object:
         apiVersion: eventing.knative.dev/v1

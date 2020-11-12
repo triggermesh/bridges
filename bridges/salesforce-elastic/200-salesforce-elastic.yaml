@@ -1,0 +1,71 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: salesforce-elastic-bridge
+spec:
+  components:
+
+  # Event broker
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      metadata:
+        name: &brokername events
+
+  # Salesforce source gather platform events and puts them in the Salesforce broker
+  - object:
+      apiVersion: sources.triggermesh.io/v1alpha1
+      kind: SalesforceSource
+      metadata:
+        name: my-salesforce
+      spec:
+        subscription:
+          channel: '{topic-channel-from-salesforce}'
+          replayID: -1
+        auth:
+          clientID: '{client-id-from-salesforce}'
+          server: https://login.salesforce.com
+          user: '{salesforce-username}'
+          certKey:
+            secretKeyRef:
+              name: salesforce-signing-key
+              key: certKey
+        sink:
+          ref:
+              apiVersion: eventing.knative.dev/v1
+              kind: Broker
+              name: *brokername
+
+  # Elasticsearch will send Salesforce events from the broker to an index.
+  - object:
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: ElasticsearchTarget
+      metadata:
+        name: &elasticsearch my-elasticsearch
+      spec:
+        connection:
+          addresses:
+          - '{elasticsearch-url}'
+          password:
+            secretKeyRef:
+              key: password
+              name: elasticsearch-credentials
+          skipVerify: false
+          username: '{elasticsearch-user}'
+        discardCloudEventContext: false
+        indexName: '{index-for-salesforce-events}'
+
+
+  # Trigger: Subscribes Elasticsearch to Salesforce events flowing through the broker
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Trigger
+      metadata:
+        name: elasticsearch-trigger
+      spec:
+        broker: *brokername
+        subscriber:
+          ref:
+            apiVersion: targets.triggermesh.io/v1alpha1
+            kind: ElasticsearchTarget
+            name: *elasticsearch

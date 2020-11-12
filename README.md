@@ -25,7 +25,7 @@ TriggerFlow allows for each Bridge to:
 
 ## Catalog
 
-The following sample Bridges are available and can be deployed on [https://cloud.triggermesh.io](https://cloud.triggermesh.io) . 
+The following sample Bridges are available and can be deployed on [https://cloud.triggermesh.io](https://cloud.triggermesh.io) .
 
 | From | To | Manifests |
 |------|----|---|
@@ -39,7 +39,8 @@ The following sample Bridges are available and can be deployed on [https://cloud
 |CronJob| ElasticSearch|[yaml](./bridges/cronjob-elastic/)|
 |CronJob| Confluent|[yaml](./bridges/cronjob-confluent/)|
 |CronJob| Tekton|[yaml](./bridges/cronjob-tekton/)|
- 
+|Salesforce| Elasticsearch|[yaml](./bridges/salesforce-elastic/)|
+
 Any combination from a documented event [Source](./docs/sources/README.md) and a documented event [Target](./docs/targets/README.md) can be made.
 
 ## Contact Us

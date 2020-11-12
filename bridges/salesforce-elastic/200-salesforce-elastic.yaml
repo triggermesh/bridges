@@ -1,7 +1,7 @@
 apiVersion: flow.triggermesh.io/v1alpha1
 kind: Bridge
 metadata:
-  name: salesforce-kafka-bridge
+  name: salesforce-elastic-bridge
 spec:
   components:
 

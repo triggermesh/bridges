@@ -1,0 +1,112 @@
+# This is an EXAMPLE Bridge. Before deploying it, replace all of the placeholder values with valid data. 
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: zendesk-sendgrid
+  annotations:
+    bridges.triggermesh.io/name: zendesk-sendgrid
+spec:
+  components:
+
+    # Event broker
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Broker
+        metadata:
+          name: &broker events
+
+    # Event source
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: ZendeskSource
+        metadata:
+          name: zendesk
+        spec:
+          email: dev@triggermesh.com
+          subdomain: triggermesh
+          token:
+            secretKeyRef:
+              name: zendesk-api
+              key: token
+          webhookUsername: pogChamp
+          webhookPassword:
+            secretKeyRef:
+              name: zendesk-api
+              key: webhookPassword
+          sink:
+            ref:
+              apiVersion: eventing.knative.dev/v1
+              kind: Broker
+              name: *broker
+   # Transformation Trigger
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Trigger
+        metadata:
+          name: transform-trigger
+        spec:
+          broker:  *broker
+          filter:
+            attributes:
+              type: com.zendesk.ticket.created
+          subscriber:
+            ref:
+              apiVersion: flow.triggermesh.io/v1alpha1
+              kind: Transformation
+              name: transform-0
+    # Transformation Service
+    - object:
+        apiVersion: flow.triggermesh.io/v1alpha1
+        kind: Transformation
+        metadata:
+          name: transform-0
+        spec:
+          context:
+          - operation: add
+            paths:
+            - key: type 
+              value: com.slack.webapi.chat.postMessage
+          data:
+          - operation: store
+            paths: 
+            - key: $url
+              value: ticket.url
+            - key: $author
+              value: current_user.email
+          - operation: delete
+            paths:
+            - key:
+          - operation: add
+            paths:
+            - key: text
+              value: '$author has created a new Zendesk Ticket: $url'
+            - key: channel
+              value: ''
+    # Event Trigger
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Trigger
+        metadata:
+          name: tmsg
+        spec:
+          broker:  *broker
+          filter:
+            attributes:
+              type: com.slack.webapi.chat.postMessage
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SlackTarget
+              name: tmslck
+    # Event Target
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SlackTarget
+        metadata:
+          name: tmslck
+        spec:
+          token:
+            secretKeyRef:
+              name: slack
+              key: token
+

@@ -1,0 +1,172 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  name: sales-ui-azur-sendgrid-bridge
+spec:
+  components:
+
+  # Event broker
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      metadata:
+        name: &brokername events
+
+  # Salesforce source gather platform events and puts them in the Salesforce broker
+  - object:
+      apiVersion: sources.triggermesh.io/v1alpha1
+      kind: SalesforceSource
+      metadata:
+        name: my-salesforce
+      spec:
+        subscription:
+          channel: '{topic-channel-from-salesforce}'
+          replayID: -1
+        auth:
+          clientID: '{client-id-from-salesforce}'
+          server: https://login.salesforce.com
+          user: '{salesforce-username}'
+          certKey:
+            secretKeyRef:
+              name: salesforce-signing-key
+              key: certKey
+        sink:
+          ref:
+              apiVersion: eventing.knative.dev/v1
+              kind: Broker
+              name: *brokername
+# BBZT
+  - object:
+      apiVersion: flow.triggermesh.io/v1alpha1
+      kind: Transformation
+      metadata:
+        name: transform-0
+      spec:
+        context:
+        - operation: add
+          paths:
+          - key: type 
+            value: io.triggermesh.twilio.sms.send
+        data:
+        - operation: store
+          paths: 
+          - key: $repository
+            value: repository.name 
+          - key: $message
+            value: head_commit.message
+          - key: $author
+            value: head_commit.author.username
+        - operation: delete
+          paths:
+          - key:
+        - operation: add
+          paths:
+          - key: to
+            value: <RECIPIENT_PHONE_NUMBER>
+          - key: message
+            value: '$author : has made changes at $repository.'
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Trigger
+      metadata:
+        name: transform-trigger
+      spec:
+        broker: event-broker
+        filter:
+          attributes:
+            type: dev.knative.source.github.push
+        subscriber:
+          ref:
+            apiVersion: flow.triggermesh.io/v1alpha1
+            kind: Transformation
+            name: transform-0
+
+   # BEERP BERP     
+  - object:
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: UiPathTarget
+      metadata:
+        name: triggermesh-uipath
+      spec:
+         robotName: pfml1
+         processName: DocShot_plz
+         tenantName: midiDefault
+         accountLogicalName: midi
+         clientID: 8DEv1AMNXczW3y4U15LL3jYf62jK93n5
+         organizationUnitID: "785170"
+         #inputArgs: "ENV_UserName:\"Hello bob\""
+         userKey:
+           secretKeyRef:
+             name: uipath
+             key: userKey
+  - object:
+      apiVersion: eventing.knative.dev/v1beta1
+      kind: Trigger
+      metadata:
+        name: uipath-sample-trigger
+      spec:
+        broker: default
+        subscriber:
+          ref:
+            apiVersion: targets.triggermesh.io/v1alpha1
+            kind: UiPathTarget
+            name: triggermesh-uipath
+
+  # Transformation Service
+  - object:
+      apiVersion: flow.triggermesh.io/v1alpha1
+      kind: Transformation
+      metadata:
+        name: transform-0
+      spec:
+        context:
+        - operation: add
+          paths:
+          - key: type 
+            value: io.triggermesh.sendgrid.email.send
+        data:
+        - operation: store
+          paths: 
+          - key: $url
+            value: ticket.url
+          - key: $author
+            value: current_user.email
+        - operation: delete
+          paths:
+          - key:
+        - operation: add
+          paths:
+          - key: message
+            value: '$author has created a new Zendesk Ticket: $url'
+  # Event Trigger
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Trigger
+      metadata:
+        name: tmsg
+      spec:
+        broker: events
+        filter:
+          attributes:
+            type: io.triggermesh.sendgrid.email.send
+        subscriber:
+          ref:
+            apiVersion: targets.triggermesh.io/v1alpha1
+            kind: SendGridTarget
+            name: tmsg
+  # Event Target
+  - object:
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: SendGridTarget
+      metadata:
+        name: tmsg
+      spec:
+        defaultFromName: bar
+        defaultFromEmail: bar@triggermesh.com
+        defaultToName: foo
+        defaultToEmail: foo@gmail.com
+        defaultSubject: New Zendesk Ticket 
+        apiKey:
+          secretKeyRef:
+            name: sendgrid
+            key: apiKey

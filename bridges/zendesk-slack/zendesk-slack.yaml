@@ -24,12 +24,12 @@ spec:
         spec:
           email: dev@triggermesh.com
           subdomain: triggermesh
+          webhookUsername: <WEB_HOOK_USERNAME>
           token:
             secretKeyRef:
               name: zendesk-api
               key: token
-          webhookUsername: pogChamp
-          webhookPassword:
+          webhookPassword: 
             secretKeyRef:
               name: zendesk-api
               key: webhookPassword

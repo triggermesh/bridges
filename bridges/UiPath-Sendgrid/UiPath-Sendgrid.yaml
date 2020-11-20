@@ -1,0 +1,143 @@
+apiVersion: flow.triggermesh.io/v1alpha1
+kind: Bridge
+metadata:
+  annotations:
+    bridges.triggermesh.io/name: uipath-sendgrid
+  name: uipath-sendgrid
+spec:
+  components:
+
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Broker
+        metadata:
+          name: &broker evnts
+
+
+    - object:
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: HTTPSource
+        metadata:
+            name: uipath
+        spec:
+            eventSource: uipath
+            eventType: io.triggermesh.uipath
+            sink:
+                ref:
+                    apiVersion: eventing.knative.dev/v1
+                    kind: Broker
+                    name: *broker  
+
+    # Transformation Service
+    - object:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: &transformname ui-sendgrid-trans
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/neffdev/ui-sendgrid:latest
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: *transformname
+        spec:
+          broker: *broker  
+          filter:
+            attributes:
+              type: io.triggermesh.uipath
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: *transformname
+
+
+    # Event Target
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SendGridTarget
+        metadata:
+          name: sg
+        spec:
+          defaultFromName: jeff
+          defaultFromEmail: dev@triggermesh.com
+          defaultSubject: Your Triggermesh Invoice Is Now Avalible
+          apiKey:
+            secretKeyRef:
+              name: sendgrid
+              key: apiKey
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          labels:
+          name: sg
+        spec:
+          broker: *broker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SendGridTarget
+              name: sg
+
+
+
+    # # Transformation Service
+    # - object:
+    #     apiVersion: flow.triggermesh.io/v1alpha1
+    #     kind: Transformation
+    #     metadata:
+    #       name: ui-sendgrid
+    #     spec:
+    #       context:
+    #       - operation: add
+    #         paths:
+    #         - key: type 
+    #           value: io.triggermesh.sendgrid.email.send
+    #       data:
+    #       - operation: store
+    #         paths: 
+    #         - key: $qID
+    #           value: QueueItem.Id
+    #         - key: $Invoice
+    #           value: QueueItems.SpecificContent.invoice
+    #         - key: $email
+    #           value: QueueItems.SpecificContent.email
+    #         - key: $customerName
+    #           value: QueueItems.SpecificContent.customerName
+    #         - key: $qTenantId
+    #           value: TenantId
+    #         - key: $qUserId
+    #           value: UserId
+    #       - operation: delete
+    #         paths:
+    #         - key:
+    #       - operation: add
+    #         paths:
+    #         - key: message
+    #           value: 'Your Triggermesh invoice can be found at: $qSpecificContent'
+    #         - key: ToEmail
+    #           value: '$email'
+    #         - key: ToName
+    #           value: '$customerName'
+    # - object:
+    #     apiVersion: eventing.knative.dev/v1
+    #     kind: Trigger
+    #     metadata:
+    #       name: ui-sendgrid
+    #     spec:
+    #       broker: *broker
+    #       filter:
+    #         attributes:
+    #           type: io.triggermesh.uipath
+    #       subscriber:
+    #         ref:
+    #           apiVersion: flow.triggermesh.io/v1alpha1
+    #           kind: Transformation
+    #           name: ui-sendgrid

@@ -1,0 +1,95 @@
+curl -v -X POST http://10.1.67.209:8080  \
+    -H "content-type: application/json"  \
+    -H "ce-specversion: 1.0"  \
+    -H "ce-source: uipath"  \
+    -H "ce-type: io.triggermesh.uipath"  \
+    -H "ce-id: 123-abc" \
+    -d '{
+    "Type": "queueItem.added",
+    "EventId": "209343351",
+    "Timestamp": "2020-11-20T18:35:15.023",
+    "Queue": {
+      "Id": 213681,
+      "Name": "qtst",
+      "Description": "",
+      "MaxNumberOfRetries": 1,
+      "AcceptAutomaticallyRetry": true,
+      "EnforceUniqueReference": false,
+      "SlaInMinutes": 0,
+      "RiskSlaInMinutes": 0
+    },
+    "QueueItems": [
+      {
+        "Id": 39469818,
+        "Key": "535b4178-a058-44f3-b4dd-89bc99e271d3",
+        "QueueDefinitionId": 213681,
+        "Status": "InProgress",
+        "ReviewStatus": "None",
+        "Priority": "High",
+        "CreationTime": "2020-11-20T18:35:15.0147984Z",
+        "StartProcessing": "2020-11-20T18:35:15.0147998Z",
+        "SecondsInPreviousAttempts": 0,
+        "RetryNumber": 0,
+        "SpecificContent": {
+          "invoice": "https://storage.googleapis.com/robot_invoices/acaeaf_asdf.pdf?x-goog-signature=09b9bb830aeb24cfd5d6cfec9a3d9ae51ab32f40eeb152a18fe7b0fb0134f29e94ce1d3c973c12607f6a514dd0de035c9c0fbdbbbb1855547ca0d77d99b3ef2a8771c186d2f0845b8a89d99b33bedb73e03d6c7725a910bef2de4ba3e7821e6487a4f8aaafb439b1a874ca71aaf3b86ae1c2f2a9354fec20dcad0f6d37cf1cce6d3ad34ab13595dbab53cd2f0f547f2c417e1c90a7f4b496774c2aa5eb495abedf2d213cf3ef1588b9e35bcd6dd83214692ad80ad563f7c3002f81ea9c751e9c00ee9b876246951f0cccafe28e3271ea2094ec2b4d70aa54f38b25e7d0808b45d3534a39faddf035503d9c507d49db984d69009a5892a38627162f4868ca5ae2&x-goog-algorithm=GOOG4-RSA-SHA256&x-goog-credential=622392516502-compute%40developer.gserviceaccount.com%2F20201120%2Fus-central2%2Fstorage%2Fgoog4_request&x-goog-date=20201120T183514Z&x-goog-expires=604800&x-goog-signedheaders=host",
+          "email": "jeffthenaef@gmail.com",
+          "customerName": "acaeaf"
+        }
+      }
+    ],
+    "TenantId": 485363,
+    "OrganizationUnitId": 785170,
+    "UserId": 1766730
+  }'
+
+
+☁️  cloudevents.Event
+Validation: valid
+Context Attributes,
+  specversion: 1.0
+  type: io.triggermesh.uipath
+  source: uipath
+  id: 210b3a76-d662-4b08-bb80-9cfc758661d9
+  time: 2020-11-20T18:35:24.551743785Z
+  datacontenttype: application/json
+Extensions,
+  knativearrivaltime: 2020-11-20T18:35:24.558581258Z
+  knativehistory: evnts-kne-trigger-kn-channel.jeffthenaef.svc.cluster.local
+Data,
+  {
+    "Type": "queueItem.added",
+    "EventId": "209343351",
+    "Timestamp": "2020-11-20T18:35:15.023",
+    "Queue": {
+      "Id": 213681,
+      "Name": "qtst",
+      "Description": "",
+      "MaxNumberOfRetries": 1,
+      "AcceptAutomaticallyRetry": true,
+      "EnforceUniqueReference": false,
+      "SlaInMinutes": 0,
+      "RiskSlaInMinutes": 0
+    },
+    "QueueItems": [
+      {
+        "Id": 39469818,
+        "Key": "535b4178-a058-44f3-b4dd-89bc99e271d3",
+        "QueueDefinitionId": 213681,
+        "Status": "InProgress",
+        "ReviewStatus": "None",
+        "Priority": "High",
+        "CreationTime": "2020-11-20T18:35:15.0147984Z",
+        "StartProcessing": "2020-11-20T18:35:15.0147998Z",
+        "SecondsInPreviousAttempts": 0,
+        "RetryNumber": 0,
+        "SpecificContent": {
+          "invoice": "https://storage.googleapis.com/robot_invoices/acaeaf_asdf.pdf?x-goog-signature=09b9bb830aeb24cfd5d6cfec9a3d9ae51ab32f40eeb152a18fe7b0fb0134f29e94ce1d3c973c12607f6a514dd0de035c9c0fbdbbbb1855547ca0d77d99b3ef2a8771c186d2f0845b8a89d99b33bedb73e03d6c7725a910bef2de4ba3e7821e6487a4f8aaafb439b1a874ca71aaf3b86ae1c2f2a9354fec20dcad0f6d37cf1cce6d3ad34ab13595dbab53cd2f0f547f2c417e1c90a7f4b496774c2aa5eb495abedf2d213cf3ef1588b9e35bcd6dd83214692ad80ad563f7c3002f81ea9c751e9c00ee9b876246951f0cccafe28e3271ea2094ec2b4d70aa54f38b25e7d0808b45d3534a39faddf035503d9c507d49db984d69009a5892a38627162f4868ca5ae2&x-goog-algorithm=GOOG4-RSA-SHA256&x-goog-credential=622392516502-compute%40developer.gserviceaccount.com%2F20201120%2Fus-central2%2Fstorage%2Fgoog4_request&x-goog-date=20201120T183514Z&x-goog-expires=604800&x-goog-signedheaders=host",
+          "email": "jeffthenaef@gmail.com",
+          "customerName": "acaeaf"
+        }
+      }
+    ],
+    "TenantId": 485363,
+    "OrganizationUnitId": 785170,
+    "UserId": 1766730
+  }

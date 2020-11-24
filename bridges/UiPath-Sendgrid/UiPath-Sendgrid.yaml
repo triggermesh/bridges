@@ -11,9 +11,87 @@ spec:
         apiVersion: eventing.knative.dev/v1
         kind: Broker
         metadata:
-          name: &broker evnts
+          name: &broker salesforce-in
+
+    - object:
+        apiVersion: flow.triggermesh.io/v1alpha1
+        kind: Transformation
+        metadata:
+          name: sf-ui
+        spec:
+          context:
+          - operation: add
+            paths:
+            - key: type 
+              value: io.triggermesh.uipath.job
+          data:
+          - operation: store
+            paths: 
+            - key: $AccountName
+              value: payload.AccountName__c
+            - key: $Email
+              value: payload.Email__c
+            - key: $Address
+              value: payload.FullAddress__c
+          - operation: delete
+            paths:
+            - key:
+          - operation: add
+            paths:
+            - key: inputArgs
+              value: '"Email__c" : "$Email", "FullAddress__c" : "$Address","AccountName__c": "$AccountName"'
+
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Trigger
+        metadata:
+          name: sf-ui
+        spec:
+          broker: *broker 
+          filter:
+            attributes:
+              type: com.salesforce.stream.message
+          subscriber:
+            ref:
+              apiVersion: flow.triggermesh.io/v1alpha1
+              kind: Transformation
+              name: sf-ui
+    - object:
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: UiPathTarget
+        metadata:
+          name: uipathtwo
+        spec:
+           robotName: pfml1
+           processName: ExcelEntry_plz
+           tenantName: midiDefault
+           accountLogicalName: midi
+           clientID: 8DEv1AMNXczW3y4U15LL3jYf62jK93n5
+           organizationUnitID: "785170"
+           #inputArgs: "ENV_UserName:\"Hello bob\""
+           userKey:
+             secretKeyRef:
+               name: uipath
+               key: userKey
 
 
+    - object:
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: uipath
+        spec:
+          broker: *broker
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: UiPathTarget
+              name: uipath
+    - object:
+        apiVersion: eventing.knative.dev/v1
+        kind: Broker
+        metadata:
+          name:  &repBroker response-events
     - object:
         apiVersion: sources.triggermesh.io/v1alpha1
         kind: HTTPSource
@@ -26,14 +104,12 @@ spec:
                 ref:
                     apiVersion: eventing.knative.dev/v1
                     kind: Broker
-                    name: *broker  
-
-    # Transformation Service
+                    name: *repBroker
     - object:
         apiVersion: serving.knative.dev/v1
         kind: Service
         metadata:
-          name: &transformname ui-sendgrid-trans
+          name: ui-sendgrid-trans
           labels:
             serving.knative.dev/visibility: cluster-local
         spec:
@@ -45,9 +121,9 @@ spec:
         apiVersion: eventing.knative.dev/v1beta1
         kind: Trigger
         metadata:
-          name: *transformname
+          name: ui-sendgrid-trans
         spec:
-          broker: *broker  
+          broker: *repBroker
           filter:
             attributes:
               type: io.triggermesh.uipath
@@ -55,15 +131,12 @@ spec:
             ref:
               apiVersion: serving.knative.dev/v1
               kind: Service
-              name: *transformname
-
-
-    # Event Target
+              name: ui-sendgrid-trans
     - object:
         apiVersion: targets.triggermesh.io/v1alpha1
         kind: SendGridTarget
         metadata:
-          name: sg
+          name: sendgrid
         spec:
           defaultFromName: jeff
           defaultFromEmail: dev@triggermesh.com
@@ -77,67 +150,15 @@ spec:
         kind: Trigger
         metadata:
           labels:
-          name: sg
+          name: sendgrid
         spec:
-          broker: *broker
+          broker: *repBroker
+          filter:
+            attributes:
+              type: io.triggermesh.sendgrid.email.send
           subscriber:
             ref:
               apiVersion: targets.triggermesh.io/v1alpha1
               kind: SendGridTarget
-              name: sg
-
-
-
-    # # Transformation Service
-    # - object:
-    #     apiVersion: flow.triggermesh.io/v1alpha1
-    #     kind: Transformation
-    #     metadata:
-    #       name: ui-sendgrid
-    #     spec:
-    #       context:
-    #       - operation: add
-    #         paths:
-    #         - key: type 
-    #           value: io.triggermesh.sendgrid.email.send
-    #       data:
-    #       - operation: store
-    #         paths: 
-    #         - key: $qID
-    #           value: QueueItem.Id
-    #         - key: $Invoice
-    #           value: QueueItems.SpecificContent.invoice
-    #         - key: $email
-    #           value: QueueItems.SpecificContent.email
-    #         - key: $customerName
-    #           value: QueueItems.SpecificContent.customerName
-    #         - key: $qTenantId
-    #           value: TenantId
-    #         - key: $qUserId
-    #           value: UserId
-    #       - operation: delete
-    #         paths:
-    #         - key:
-    #       - operation: add
-    #         paths:
-    #         - key: message
-    #           value: 'Your Triggermesh invoice can be found at: $qSpecificContent'
-    #         - key: ToEmail
-    #           value: '$email'
-    #         - key: ToName
-    #           value: '$customerName'
-    # - object:
-    #     apiVersion: eventing.knative.dev/v1
-    #     kind: Trigger
-    #     metadata:
-    #       name: ui-sendgrid
-    #     spec:
-    #       broker: *broker
-    #       filter:
-    #         attributes:
-    #           type: io.triggermesh.uipath
-    #       subscriber:
-    #         ref:
-    #           apiVersion: flow.triggermesh.io/v1alpha1
-    #           kind: Transformation
-    #           name: ui-sendgrid
+              name: sendgrid
+ 

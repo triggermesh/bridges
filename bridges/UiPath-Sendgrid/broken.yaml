@@ -1,0 +1,79 @@
+
+
+        apiVersion: eventing.knative.dev/v1
+        kind: Broker
+        metadata:
+          name:  response-events
+
+---
+        apiVersion: sources.triggermesh.io/v1alpha1
+        kind: HTTPSource
+        metadata:
+            name: uipath
+        spec:
+            eventSource: uipath
+            eventType: io.triggermesh.uipath
+            sink:
+                ref:
+                    apiVersion: eventing.knative.dev/v1
+                    kind: Broker
+                    name: response-events 
+
+---
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        metadata:
+          name: ui-sendgrid-trans
+          labels:
+            serving.knative.dev/visibility: cluster-local
+        spec:
+          template:
+            spec:
+              containers:
+              - image: gcr.io/neffdev/ui-sendgrid:latest
+---
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          name: ui-sendgrid-trans
+        spec:
+          broker: response-events 
+          filter:
+            attributes:
+              type: io.triggermesh.uipath
+          subscriber:
+            ref:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+              name: ui-sendgrid-trans
+
+
+---
+        apiVersion: targets.triggermesh.io/v1alpha1
+        kind: SendGridTarget
+        metadata:
+          name: sendgrid
+        spec:
+          defaultFromName: jeff
+          defaultFromEmail: dev@triggermesh.com
+          defaultSubject: Your Triggermesh Invoice Is Now Avalible
+          apiKey:
+            secretKeyRef:
+              name: sendgrid
+              key: apiKey
+---
+        apiVersion: eventing.knative.dev/v1beta1
+        kind: Trigger
+        metadata:
+          labels:
+          name: sendgrid
+        spec:
+          broker: response-events
+          filter:
+            attributes:
+              type: io.triggermesh.sendgrid.email.send
+          subscriber:
+            ref:
+              apiVersion: targets.triggermesh.io/v1alpha1
+              kind: SendGridTarget
+              name: sendgrid

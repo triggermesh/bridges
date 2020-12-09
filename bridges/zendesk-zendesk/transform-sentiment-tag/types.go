@@ -21,6 +21,7 @@ type Request struct {
 	Ticket struct {
 		ID          int64  `json:"id"`
 		Description string `json:"description"`
+		Title       string `json:"title"`
 	} `json:"ticket"`
 }
 

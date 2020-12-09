@@ -20,6 +20,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -62,7 +63,14 @@ func (recv *Receiver) handleEvent(ctx context.Context, e cloudevents.Event) (*cl
 
 	log.Printf("Processing event from source %q", e.Source())
 
-	sentiment, err := recv.analyzeSentiment(ctx, req.Ticket.Description)
+	var input string
+	if strings.Contains(req.Ticket.Description, "!** ") {
+		input = req.Ticket.Title
+	} else {
+		input = req.Ticket.Description
+	}
+
+	sentiment, err := recv.analyzeSentiment(ctx, input)
 	if err != nil {
 		log.Printf("Failed to analyze ticket sentiment: %s", err)
 		return nil, cloudevents.NewHTTPResult(http.StatusInternalServerError,

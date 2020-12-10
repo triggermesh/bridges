@@ -1,4 +1,4 @@
-FROM golang:1.14-stretch AS builder
+FROM golang:1.15-buster AS builder
 
 ENV CGO_ENABLED 0
 

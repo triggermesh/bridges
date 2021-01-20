@@ -21,6 +21,7 @@ def trans():
         headers['Ce-Id']=request.headers['Ce-Id']
         headers['Ce-Type']='io.triggermesh.datadog.metric.aggregated'
         headers['Ce-Source']=request.headers['Ce-Source'] + "/translated"
+        headers['Ce-Subject']=request.headers['Ce-Subject']
 
         # Modify the Oracle OCI Monitoring data to be usable for Datadog
         data = []

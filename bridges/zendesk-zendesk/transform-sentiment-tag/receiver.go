@@ -31,7 +31,7 @@ import (
 
 const (
 	ticketCreatedEventType = "com.zendesk.ticket.created"
-	tagCreateEventType     = "com.zendesk.tag.create"
+	tagCreateEventType     = "com.zendesk.tag.add"
 
 	transformTypeExtension = "transformtype"
 )

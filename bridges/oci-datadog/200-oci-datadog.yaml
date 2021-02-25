@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,128 +17,167 @@ kind: Bridge
 metadata:
   annotations:
     bridges.triggermesh.io/name: oci-datadog
+    bridges.triggermesh.io/title: Oracle Cloud Metrics to Datadog
   name: oci-datadog
 spec:
   components:
-    - object:
-        apiVersion: eventing.knative.dev/v1beta1
-        kind: Broker
-        metadata:
-          name: &brokername oci-datadog
-    - object:
-        apiVersion: sources.triggermesh.io/v1alpha1
-        kind: OCIMetricsSource
-        metadata:
-          name: oci-cpu-metrics
-        spec:
-          # required to interact with the Oracle Cloud API
-          oracleApiPrivateKey:
-            secretKeyRef:
-              name: oraclecreds
-              key: apiKey
-          oracleApiPrivateKeyPassphrase:
-            secretKeyRef:
-              name: oraclecreds
-              key: apiPassphrase
-          oracleApiPrivateKeyFingerprint:
-            secretKeyRef:
-              name: oraclecreds
-              key: apiKeyFingerprint
-          oracleTenancy: ocid1.tenancy.oc1..aaaaaaaaswr
-          oracleUser: ocid1.user.oc1..aaaaaaaaqloc
-          oracleRegion: us-ashburn-1
-          metrics:
-          - name: cpuutilization
-            metricsNamespace: oci_computeagent
-            metricsQuery: CpuUtilization[1m].mean()
-          metricsPollingFrequency: 1m
-          sink:
-            ref:
-              apiVersion: eventing.knative.dev/v1beta1
-              kind: Broker
-              name: *brokername
-    - object:
-        apiVersion: sources.triggermesh.io/v1alpha1
-        kind: OCIMetricsSource
-        metadata:
-          name: oci-network-metrics
-        spec:
-          # required to interact with the Oracle Cloud API
-          oracleApiPrivateKey:
-            secretKeyRef:
-              name: oraclecreds
-              key: apiKey
-          oracleApiPrivateKeyPassphrase:
-            secretKeyRef:
-              name: oraclecreds
-              key: apiPassphrase
-          oracleApiPrivateKeyFingerprint:
-            secretKeyRef:
-              name: oraclecreds
-              key: apiKeyFingerprint
-          oracleTenancy: ocid1.tenancy.oc1..aaaaaaaaswr
-          oracleUser: ocid1.user.oc1..aaaaaaaaqloc
-          oracleRegion: us-ashburn-1
-          metricsNamespace: oci_computeagent
-          metricsQuery: NetworksBytesOut[1m].mean()
-          metricsPollingFrequency: 1m
-          sink:
-            ref:
-              apiVersion: eventing.knative.dev/v1beta1
-              kind: Broker
-              name: *brokername
-    # Transformation Service
-    - object:
-        apiVersion: serving.knative.dev/v1
-        kind: Service
-        metadata:
-          name: &transformname trans-datadog
-          labels:
-            serving.knative.dev/visibility: cluster-local
-        spec:
-          template:
-            spec:
-              containers:
-              - image: gcr.io/triggermesh/bridge-examples/oci-datadog/oci-to-datadog-translator:latest
-    - object:
-        apiVersion: eventing.knative.dev/v1
-        kind: Trigger
-        metadata:
-          name: *transformname
-        spec:
-          broker: *brokername
-          filter:
-            attributes:
-              type: com.oracle.cloud.monitoring
-          subscriber:
-            ref:
-              apiVersion: serving.knative.dev/v1
-              kind: Service
-              name: *transformname
-    # Event Target
-    - object:
-        apiVersion: targets.triggermesh.io/v1alpha1
-        kind: DatadogTarget
-        metadata:
-         name: &targetname datadogtarget
-        spec:
-         metricPrefix: triggermesh # Defines an optional prefix to define for metric names
-         apiKey:
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      metadata:
+        name: oci-datadog
+
+  - object:
+      apiVersion: sources.triggermesh.io/v1alpha1
+      kind: OCIMetricsSource
+      metadata:
+        name: ocimetrics
+      spec:
+        metrics:
+        - metricsNamespace: oci_computagent
+          metricsQuery: CpuUtilization[1m].mean()
+          name: cpu-utilization
+        - metricsNamespace: oci_computagent
+          metricsQuery: MemoryUtilization[1m].mean()
+          name: memory-utilization
+        metricsPollingFrequency: 1m
+        oracleApiPrivateKey:
+          valueFromSecret:
+            key: apiKey
+            name: oraclecreds
+        oracleApiPrivateKeyFingerprint:
+          valueFromSecret:
+            key: apiKeyFingerprint
+            name: oraclecreds
+        oracleApiPrivateKeyPassphrase:
+          valueFromSecret:
+            key: apiPassphrase
+            name: oraclecreds
+        oracleRegion: us-ashburn-1
+        oracleTenancy: ocid1.tenancy.oc1..aaaaaaaatenancy
+        oracleUser: ocid1.user.oc1..aaaaaaaauser
+        sink:
+          ref:
+            apiVersion: eventing.knative.dev/v1
+            kind: Broker
+            name: oci-datadog
+
+  - object:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      metadata:
+        name: sockeye
+      spec:
+        template:
+          spec:
+            containers:
+            - image: docker.io/n3wscott/sockeye:v0.7.0@sha256:e603d8494eeacce966e57f8f508e4c4f6bebc71d095e3f5a0a1abaf42c5f0e48
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Trigger
+      metadata:
+        name: sockeye-trigger
+      spec:
+        broker: oci-datadog
+        subscriber:
+          ref:
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            name: sockeye
+
+  - object:
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: InfraTarget
+      metadata:
+        name: oci-metrics-to-datadog
+      spec:
+        script:
+          code:  |-
+            function handle(input) {
+
+              output = {};
+              output.type = "io.triggermesh.datadog.metric.aggregated";
+
+              try {
+
+                var data = [];
+                metricType = 'distribution';
+
+                input.data.forEach(function(e) {
+                  if (typeof e.dimensions.resourceDisplayName != "undefined") {
+                    resourceGroup = e.dimensions.resourceDisplayName
+                  } else if (typeof e.dimensions.resourceName != "undefined") {
+                    resourceGroup = e.dimensions.resourceName
+                  } else {
+                    resourceGroup = e['dimensions']['resourceId']
+                  }
+
+                  e.aggregatedDatapoints.forEach(function(adp){
+                    datum = {};
+                    datum['displayName'] = e.name;
+                    datum['resourceGroup'] = resourceGroup;
+                    datum['timeStamp'] = adp.timestamp;
+                    datum['value'] = adp.value;
+                    datum['metricType'] = metricType;
+                    data.push(datum);
+                  })
+                });
+
+                output.category = "success";
+                output.data = {"data": data};
+
+              } catch (error) {
+                output.data = {
+                  "code": "adapter-process",
+                  "details": {"error": error}
+                };
+                output.category = "error";
+              }
+
+              return output;
+            }
+
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Trigger
+      metadata:
+        name: transform-trigger
+      spec:
+        broker: oci-datadog
+        filter:
+          attributes:
+            type: com.oracle.cloud.monitoring
+        subscriber:
+          ref:
+            apiVersion: targets.triggermesh.io/v1alpha1
+            kind: InfraTarget
+            name: oci-metrics-to-datadog
+
+  - object:
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: DatadogTarget
+      metadata:
+        name: tmdatadog
+      spec:
+        metricPrefix: triggermesh
+        apiKey:
           secretKeyRef:
             name: ddapitoken
             key: apiKey
-    - object:
-        apiVersion: eventing.knative.dev/v1
-        kind: Trigger
-        metadata:
-          name: *targetname
-        spec:
-          broker: *brokername
-          filter:
-            attributes:
-              type: io.triggermesh.datadog.metric.aggregated
-          subscriber:
-            ref:
-              apiVersion: targets.triggermesh.io/v1alpha1
-              kind: DatadogTarget
-              name: *targetname
+
+  - object:
+      apiVersion: eventing.knative.dev/v1
+      kind: Trigger
+      metadata:
+        name: datadog-target
+      spec:
+        broker: oci-datadog
+        filter:
+          attributes:
+            type: io.triggermesh.datadog.metric.aggregated
+            category: success
+        subscriber:
+          ref:
+            apiVersion: targets.triggermesh.io/v1alpha1
+            kind: DatadogTarget
+            name: tmdatadog

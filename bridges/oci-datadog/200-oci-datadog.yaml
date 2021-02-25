@@ -27,7 +27,6 @@ spec:
       metadata:
         name: oci-datadog
 
-  # Step 2
   - object:
       apiVersion: sources.triggermesh.io/v1alpha1
       kind: OCIMetricsSource
@@ -36,13 +35,12 @@ spec:
       spec:
         metrics:
         - metricsNamespace: oci_computagent
-          metricsQuery: CpuUtilization[5m]{deploymentType = "Shared"}.mean()
+          metricsQuery: CpuUtilization[1m].mean()
           name: cpu-utilization
-          oracleCompartment: ocid1.tenancy.oc1..aaaaaaaacompartment
         - metricsNamespace: oci_computagent
-          metricsQuery: CPUTime[5m]{deploymentType = "Shared"}.mean()
-          name: cpu-time
-        metricsPollingFrequency: 5m
+          metricsQuery: MemoryUtilization[1m].mean()
+          name: memory-utilization
+        metricsPollingFrequency: 1m
         oracleApiPrivateKey:
           valueFromSecret:
             key: apiKey
@@ -64,7 +62,6 @@ spec:
             kind: Broker
             name: oci-datadog
 
-  # Step 3
   - object:
       apiVersion: serving.knative.dev/v1
       kind: Service
@@ -88,7 +85,6 @@ spec:
             kind: Service
             name: sockeye
 
-  # Step 4
   - object:
       apiVersion: targets.triggermesh.io/v1alpha1
       kind: InfraTarget
@@ -157,14 +153,13 @@ spec:
             kind: InfraTarget
             name: oci-metrics-to-datadog
 
-  # Step 5
   - object:
       apiVersion: targets.triggermesh.io/v1alpha1
       kind: DatadogTarget
       metadata:
         name: tmdatadog
       spec:
-        metricPrefix: triggermesh # Defines an optional prefix to define for metric names
+        metricPrefix: triggermesh
         apiKey:
           secretKeyRef:
             name: ddapitoken

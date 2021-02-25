@@ -35,14 +35,13 @@ spec:
         name: ocimetrics
       spec:
         metrics:
-        - metricsNamespace: oci_autonomous_database
-          metricsQuery: CpuUtilization[5m]{deploymentType = "Shared", resourceName = "CABTEST"}.mean()
+        - metricsNamespace: oci_computagent
+          metricsQuery: CpuUtilization[5m]{deploymentType = "Shared"}.mean()
           name: cpu-utilization
           oracleCompartment: ocid1.tenancy.oc1..aaaaaaaacompartment
-        - metricsNamespace: oci_autonomous_database
-          metricsQuery: CPUTime[5m]{deploymentType = "Shared", resourceName = "CABTEST"}.mean()
+        - metricsNamespace: oci_computagent
+          metricsQuery: CPUTime[5m]{deploymentType = "Shared"}.mean()
           name: cpu-time
-          oracleCompartment: ocid1.tenancy.oc1..aaaaaaaacompartment
         metricsPollingFrequency: 5m
         oracleApiPrivateKey:
           valueFromSecret:
